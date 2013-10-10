@@ -2,9 +2,9 @@
 
 Kojak.Instrumentor = function () {
     this._hasInstrumented = false;
-    this._instrumentedPackageProfiles = {};
+    this._packageProfiles = {};
     this._currentPackageProfile = undefined;
-    this._instrumentedFunctionProfiles = [];
+    this._functionProfiles = [];
 
     this._stackLevel = -1;
     this._stackLevelCumTimes = {};
@@ -19,7 +19,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 throw 'Code already instrumented';
             }
 
-            console.log('Kojak instrumenting root packages: ', Kojak.Config.getIncludePackages());
+            console.log('Kojak instrumenting root packages: ', Kojak.Config.getIncludedPackages());
             this._hasInstrumented = true;
             this._instrumentPackages();
             this._repairClassReferences();
@@ -34,7 +34,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     _instrumentPackages: function () {
         var packageName, pkg, objName, obj;
 
-        this._curPackageNameStack = Kojak.Config.getIncludePackages().slice(0);
+        this._curPackageNameStack = Kojak.Config.getIncludedPackages().slice(0);
 
         // go through each packages children
         while (this._curPackageNameStack.length > 0) {
@@ -52,7 +52,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 // Check if the package has already been instrumented, this is possible if there are multiple references to the same class
                 if (!pkg.hasOwnProperty('_kContainerProfile')) {
                     pkg._kContainerProfile = new Kojak.ContainerProfile(packageName);
-                    this._currentPackageProfile = this._instrumentedPackageProfiles[packageName] = pkg._kContainerProfile;
+                    this._currentPackageProfile = this._packageProfiles[packageName] = pkg._kContainerProfile;
 
                     // Locate the package's Classes, Functions or nested Packages
                     for (objName in pkg) {
@@ -139,7 +139,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         if(!this._shouldIgnore(container._kContainerProfile.getKojakPath() + '.' + functionName, funkshun)){
             functionProfile = new Kojak.FunctionProfile(this, container, functionName, funkshun);
             container[functionName] = functionProfile.getWrappedFunction();
-            this._instrumentedFunctionProfiles.push(functionProfile);
+            this._functionProfiles.push(functionProfile);
             container._kContainerProfile.addFunctionProfile(functionProfile);
         }
         else {
@@ -170,8 +170,8 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     _repairClassReferences: function(){
         var i, fProfile, fixedIndexes = [];
 
-        for(i = 0; i < this._instrumentedFunctionProfiles.length; i++){
-            fProfile = this._instrumentedFunctionProfiles[i];
+        for(i = 0; i < this._functionProfiles.length; i++){
+            fProfile = this._functionProfiles[i];
             if(fProfile.getOrigFunction()._kContainerProfile){
                 // Restore the original function / class reference that is not wrapped
                 fProfile.getContainer()[fProfile.getFunctionName()] = fProfile.getOrigFunction();
@@ -180,7 +180,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         }
 
         fixedIndexes.forEach(function(fixedIndex){
-            this._instrumentedFunctionProfiles.splice(fixedIndex, 1);
+            this._functionProfiles.splice(fixedIndex, 1);
         }.bind(this));
     },
 
@@ -215,7 +215,11 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         }
     },
 
-    getInstrumentedPackageProfiles: function(){
-        return this._instrumentedPackageProfiles;
+    getPackageProfiles: function(){
+        return this._packageProfiles;
+    },
+
+    getFunctionProfiles: function(){
+        return this._functionProfiles;
     }
 });

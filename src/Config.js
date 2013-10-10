@@ -198,7 +198,7 @@ Kojak.Config = {
             version: Kojak.Config.CURRENT_VERSION,
             realTimeFunctionLogging: false,
             includedPackages: [],
-            excludePaths: [],
+            excludedPaths: [],
             autoStart: Kojak.Config.AUTO_START_NONE
         };
     }
