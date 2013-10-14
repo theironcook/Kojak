@@ -7,12 +7,20 @@ Kojak.hasStarted = function(){
 
 // Loads configuration from local storage
 Kojak.Config.load();
-Kojak._instrumentor = new Kojak.Instrumentor();
+Kojak.instrumentor = new Kojak.Instrumentor();
 
 Kojak.start = function(){
     console.log('starting Kojak now');
-    Kojak._instrumentor.instrument();
+    Kojak.instrumentor.instrument();
     Kojak._hasStarted = true;
+};
+
+Kojak.takeCheckpoint = function(){
+    if(!Kojak.hasStarted()){
+        Kojak.start();
+    }
+
+    Kojak.instrumentor.takeCheckpoint();
 };
 
 switch(Kojak.Config.getAutoStart()){
@@ -20,13 +28,13 @@ switch(Kojak.Config.getAutoStart()){
         Kojak.start();
         break;
     case Kojak.Config.AUTO_ON_JQUERY_LOAD:
-        if(!window.$ || !window.$.ready){
-            $.ready(function(){
+        if(window.jQuery && window.jQuery.ready){
+            jQuery(document).ready(function(){
                 Kojak.start();
             });
         }
         else {
-            console.log('Kojak autoStart set to ' + Kojak.Config.AUTO_ON_JQUERY_LOAD + ' but JQuery not found.');
+            console.log('Kojak autoStart set to Kojak.Config.AUTO_ON_JQUERY_LOAD but jQuery was not found.\nDid you forget to include jQuery?');
         }
         break;
     case Kojak.Config.AUTO_DELAYED:
@@ -34,6 +42,11 @@ switch(Kojak.Config.getAutoStart()){
             Kojak.start();
         }, Kojak.Config.getAutoStartDelay());
         break;
+}
+
+// Shortcuts if there are no conflicts
+if(!window.K){
+    window.K = Kojak;
 }
 
 

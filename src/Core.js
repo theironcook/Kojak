@@ -70,6 +70,19 @@ Kojak.Core = {
         return keys;
     },
 
+    getValues: function(obj){
+        var values = [], key, value;
+        Kojak.Core.assert(Kojak.Core.isObject(obj), 'Only use with objects');
+
+        for(key in obj){
+            if(obj.hasOwnProperty(key)){
+                values.push(obj[key]);
+            }
+        }
+
+        return values;
+    },
+
     // only tested with array of strings
     unique: function(arr){
         var i, seen = {}, uq = [];

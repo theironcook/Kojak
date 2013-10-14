@@ -19,11 +19,13 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 throw 'Code already instrumented';
             }
 
-            console.log('Kojak instrumenting root packages: ', Kojak.Config.getIncludedPackages());
             this._hasInstrumented = true;
-            this._instrumentPackages();
+
+            this._instrumentConfigPackages();
+            this._instrumentConfigClasses();
+
             this._repairClassReferences();
-            console.log('Kojak has completed instrumenting packages.  Run Kojak.Report.instrumentedPackages() to see what has been instrumented');
+            console.log('Kojak has completed instrumenting packages.  Run Kojak.Report.instrumentedCode() to see what has been instrumented');
         }
         catch (exception) {
             console.log('Error, Kojak instrument has failed ', exception);
@@ -31,10 +33,11 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         }
     },
 
-    _instrumentPackages: function () {
+    _instrumentConfigPackages: function () {
         var packageName, pkg, objName, obj;
 
         this._curPackageNameStack = Kojak.Config.getIncludedPackages().slice(0);
+        console.log('Kojak instrumenting root packages: ', this._curPackageNameStack);
 
         // go through each packages children
         while (this._curPackageNameStack.length > 0) {
@@ -51,7 +54,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
             else {
                 // Check if the package has already been instrumented, this is possible if there are multiple references to the same class
                 if (!pkg.hasOwnProperty('_kContainerProfile')) {
-                    pkg._kContainerProfile = new Kojak.ContainerProfile(packageName);
+                    pkg._kContainerProfile = new Kojak.ContainerProfile(packageName, pkg);
                     this._currentPackageProfile = this._packageProfiles[packageName] = pkg._kContainerProfile;
 
                     // Locate the package's Classes, Functions or nested Packages
@@ -67,11 +70,14 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                         }
                     }
                 }
-                else {
-//                    console.log('skipping duplicate package ', packageName);
-                }
             }
         }
+    },
+
+    // Useful if you only want to target a few classes, or if you used a class as a namespace but there are conflicts
+    // with other classes in the namespace you want to avoid
+    _instrumentConfigClasses: function () {
+        // todo
     },
 
     _instrumentObj: function(parent, objName, obj){
@@ -100,16 +106,16 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     },
 
     _instrumentClass: function (kojakPath, className, clazz) {
-        var classFuncProfile, classProtoProfile;
+        var containerProfile;
 
-        classFuncProfile = this._instrumentClassContainer(kojakPath, className, clazz);
-        if(classFuncProfile){
-            this._currentPackageProfile.addClassFunctionProfile(classFuncProfile);
+        containerProfile = this._instrumentClassContainer(kojakPath, className, clazz);
+        if(containerProfile){
+            this._currentPackageProfile.addChildContainerProfile(containerProfile);
         }
 
-        classProtoProfile = this._instrumentClassContainer(kojakPath, className + '.prototype', clazz.prototype);
-        if(classProtoProfile){
-            this._currentPackageProfile.addClassProtoProfile(classProtoProfile);
+        containerProfile = this._instrumentClassContainer(kojakPath, className + '.prototype', clazz.prototype);
+        if(containerProfile){
+            this._currentPackageProfile.addChildContainerProfile(containerProfile);
         }
     },
 
@@ -117,7 +123,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         var obj;
 
         if(!this._shouldIgnore(className, container) ){
-            container._kContainerProfile = new Kojak.ContainerProfile(kojakPath + '.' + className);
+            container._kContainerProfile = new Kojak.ContainerProfile(kojakPath + '.' + className, container);
 
             for(var objName in container){
                 if (container.hasOwnProperty(objName)) {
@@ -136,14 +142,18 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     _instrumentFunction: function(container, functionName, funkshun){
         var functionProfile;
 
-        if(!this._shouldIgnore(container._kContainerProfile.getKojakPath() + '.' + functionName, funkshun)){
-            functionProfile = new Kojak.FunctionProfile(this, container, functionName, funkshun);
-            container[functionName] = functionProfile.getWrappedFunction();
-            this._functionProfiles.push(functionProfile);
-            container._kContainerProfile.addFunctionProfile(functionProfile);
-        }
-        else {
-//            console.log('Skipping duplicate function', container._kojakPath + '.' + functionName);
+        if(!this._shouldIgnoreFunction(container, functionName, funkshun)){
+            // Sometimes there are multiple references to the same exact function
+            if(funkshun.hasOwnProperty('_kOriginal')){
+                // In this case, the function has already been profiled so use the already wrapped function
+                container[functionName] = funkshun._kOriginal.getWrappedFunction();
+            }
+            else {
+                functionProfile = new Kojak.FunctionProfile(container, functionName, funkshun);
+                container[functionName] = functionProfile.getWrappedFunction();
+                this._functionProfiles.push(functionProfile);
+                container._kContainerProfile.addChildFunctionProfile(functionProfile);
+            }
         }
     },
 
@@ -165,8 +175,18 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         return shouldIgnore;
     },
 
+    _shouldIgnoreFunction: function(container, functionName, funkshun){
+        if(functionName === 'functionName'){
+            return true;
+        }
+        else {
+            return Kojak.Config.isPathExcluded(container._kContainerProfile.getKojakPath() + '.' + functionName);
+        }
+    },
+
     // Occasionally you might have references to classes and the reference was profiled before the class.  This happens
     // especially with mixins to classes.  In this case, repair the wrapped reference to the class by unwrapping it.
+    // You can't use 'new' with a wrapped function / class
     _repairClassReferences: function(){
         var i, fProfile, fixedIndexes = [];
 
@@ -181,6 +201,12 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
 
         fixedIndexes.forEach(function(fixedIndex){
             this._functionProfiles.splice(fixedIndex, 1);
+        }.bind(this));
+    },
+
+    takeCheckpoint: function(){
+        this._functionProfiles.forEach(function(functionProfile){
+            functionProfile.takeCheckpoint();
         }.bind(this));
     },
 

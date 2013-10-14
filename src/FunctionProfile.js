@@ -1,8 +1,7 @@
 
-Kojak.FunctionProfile = function (instrumentor, container, functionName, origFunction) {
+Kojak.FunctionProfile = function (container, functionName, origFunction) {
     var _this = this;
 
-    this._instrumentor = instrumentor;
     this._container = container;
     this._functionName = functionName;
     this._origFunction = origFunction;
@@ -15,14 +14,17 @@ Kojak.FunctionProfile = function (instrumentor, container, functionName, origFun
     this._isolatedTime = 0;
 
     this._wrappedFunction = function(){
-        _this._instrumentor.recordStartFunction(_this);
+        Kojak.instrumentor.recordStartFunction(_this);
         var returnValue = origFunction.apply(this, arguments);
-        _this._instrumentor.recordStopFunction(_this);
+        Kojak.instrumentor.recordStopFunction(_this);
 
         return returnValue;
     };
 
     this._wrappedFunction._kFunctionProfile = this;
+    // Update the original reference to know about this function profile. Useful when you have a function
+    // with multiple references for some reason.
+    origFunction._kOriginal = this;
 };
 
 Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
@@ -70,6 +72,10 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
         this._isolatedTime += addMe;
     },
 
+    getProperty: function(propName){
+        return this['get' + propName]();
+    },
+
     getWholeTime: function(){
         return this._wholeTime;
     },
@@ -80,5 +86,23 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
 
     getIsolatedTime: function(){
         return this._isolatedTime;
+    },
+
+    takeCheckpoint: function(){
+        this._callCount_checkpoint = this._callCount;
+        this._wholeTime_checkpoint = this._wholeTime;
+        this._isolatedTime_checkpoint = this._isolatedTime;
+    },
+
+    getCallCount_Checkpoint: function(){
+        return this._callCount - this._callCount_checkpoint;
+    },
+
+    getWholeTime_Checkpoint: function(){
+        return this._wholeTime - this._wholeTime_checkpoint;
+    },
+
+    getIsolatedTime_Checkpoint: function(){
+        return this._isolatedTime - this._isolatedTime_checkpoint;
     }
 });

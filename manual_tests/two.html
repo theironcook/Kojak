@@ -3,6 +3,7 @@
 <head>
     <title>Kojak Manual Test Two</title>
 
+    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>-->
     <script src="../Kojak.js"></script>
 
     <script>
@@ -29,6 +30,10 @@
                 blockThread(1.5);
             },
             functionB: function () {
+
+            },
+
+            functionC: function(){
 
             },
 
@@ -62,12 +67,13 @@
         // Kojak should ignore these
         com.hotidea.number1 = 3.14;
         com.hotidea.string1 = 'a string';
-        com.hotidea.function1 = function () {
-        }; // not a class
+
+        com.hotidea.function1 = function () {};
+        com.hotidea.duplicateFunc = com.hotidea.function1;
+
         com.hotidea.fakeNamespace = {number2: 3.14}; // should be checked even though there are no classes
         com.hotidea.IamUndefined = undefined;
 
-        com.hotidea.duplicateFunc = com.hotidea.function1;
 
         com.another = {
             AnotherClass: function(){}
@@ -82,6 +88,9 @@
             utilB: function(){}
         };
 
+        com.another.utilityFunc = function(){
+
+        };
 
         window.test = function(){
             console.log('running test');
@@ -108,11 +117,11 @@
     com.domPackage.div1ArrayRef = [document.getElementById('div1')];
     com.domPackage.div1ArrayRef.DomClassB = function(){};
 
-    Kojak.Config.setIncludedPackages(['com']);
-    Kojak.Config.setRealTimeFunctionLogging(true);
-    Kojak.start();
-
-    Kojak.Report.instrumentedPackages({reallyVerbose: true, filter: 'com'});
+//    Kojak.Config.setIncludedPackages(['com']);
+//    Kojak.Config.setRealTimeFunctionLogging(true);
+//    Kojak.start();
+//
+//    Kojak.Report.instrumentedCode({reallyVerbose: true, filter: 'com'});
     //        setTimeout(function(){test();}, 1000);
 </script>
 </body>

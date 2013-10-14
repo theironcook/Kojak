@@ -1,84 +1,85 @@
 
-/*
-all packages, classFunctions and classProtos will have a _kContainerProfile
+Kojak.ContainerProfile = function(kojakPath, container){
+    Kojak.Core.assert(kojakPath, container);
 
-The _kContainerProfile will have
-  _package profiles
-  _classFunction profiles
-  _classProto profiles
-  _function profiles
- */
-
-Kojak.ContainerProfile = function(kojakPath){
-    Kojak.Core.assert(kojakPath);
     this._kojakPath = kojakPath;
-    this._packageProfiles = {};
-    this._classFunctionProfiles = {};
-    this._classProtoProfiles = {};
-    this._allClassProfiles = {};
-    this._functionProfiles = {};
+    this._container = container;
+
+    this._childContainerProfiles = {};
+    this._childFunctionProfiles = {};
+
+    // calculate the container type
+    if(Kojak.Core.isFunction(container)){
+        this._containerType = Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER;
+    }
+    else if(Kojak.Core.isObject(container)){
+        if(kojakPath.endsWith('.prototype')){
+            this._containerType = Kojak.ContainerProfile.CLASS_PROTOTYPE_CONTAINER;
+        }
+        else {
+            this._containerType = Kojak.ContainerProfile.PACKAGE_CONTAINER;
+        }
+    }
 };
+
+// Enums / constants
+Kojak.ContainerProfile.PACKAGE_CONTAINER = 'PACKAGE_CONTAINER';
+Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER = 'CLASS_FUNCTION_CONTAINER';
+Kojak.ContainerProfile.CLASS_PROTOTYPE_CONTAINER = 'CLASS_PROTOTYPE_CONTAINER';
 
 Kojak.Core.extend(Kojak.ContainerProfile.prototype, {
     getKojakPath: function(){
         return this._kojakPath;
     },
 
-    addPackageProfile: function(packageProfile){
-        Kojak.Core.assert(!this._packageProfiles[packageProfile.getKojakPath()], 'why was the same package profile added twice');
-        this._packageProfiles[packageProfile.getKojakPath()] = packageProfile;
+    getContainerType: function(){
+        return this._containerType;
     },
 
-    getPackageProfiles: function(){
-        return this._packageProfiles;
+    addChildContainerProfile: function(childContainerProfile){
+        Kojak.Core.assert(!this._childContainerProfiles[childContainerProfile.getKojakPath()], 'why was the same child container profile added twice');
+        this._childContainerProfiles[childContainerProfile.getKojakPath()] = childContainerProfile;
     },
 
-    addClassFunctionProfile: function(classFunctionProfile){
-        Kojak.Core.assert(!this._classFunctionProfiles[classFunctionProfile.getKojakPath()], 'why was the same class function profile added twice');
-        this._classFunctionProfiles[classFunctionProfile.getKojakPath()] = classFunctionProfile;
-        this._allClassProfiles[classFunctionProfile.getKojakPath()] = classFunctionProfile;
+    addChildFunctionProfile: function(childFunctionProfile){
+        Kojak.Core.assert(!this._childFunctionProfiles[childFunctionProfile.getKojakPath()], 'why was the same child function profile added twice');
+        this._childFunctionProfiles[childFunctionProfile.getKojakPath()] = childFunctionProfile;
     },
 
-    getClassFunctionProfiles: function(){
-        return this._classFunctionProfiles;
+    getChildClassContainerProfiles: function(){
+        var profiles = [], profilePath, profile;
+
+        for(profilePath in this._childContainerProfiles){
+            profile = this._childContainerProfiles[profilePath];
+
+            if( profile.getContainerType() === Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER ||
+                profile.getContainerType() === Kojak.ContainerProfile.CLASS_PROTOTYPE_CONTAINER){
+                profiles.push(profile);
+            }
+        }
+
+        return profiles;
     },
 
-    addClassProtoProfile: function(classProtoProfile){
-        Kojak.Core.assert(!this._classProtoProfiles[classProtoProfile.getKojakPath()], 'why was the same class proto profile added twice');
-        this._classProtoProfiles[classProtoProfile.getKojakPath()] = classProtoProfile;
-        this._allClassProfiles[classProtoProfile.getKojakPath()] = classProtoProfile;
+    getChildClassFunctionCount: function(){
+        var count = 0, childContainerPath, childContainer;
+
+        for(childContainerPath in this._childContainerProfiles){
+            childContainer = this._childContainerProfiles[childContainerPath];
+
+            if(childContainer.getContainerType() === Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER){
+                count++;
+            }
+        }
+
+        return count;
     },
 
-    getClassFunctionKojakPaths: function(){
-        return Kojak.Core.getKeys(this._classFunctionProfiles);
+    getChildFunctions: function(){
+        return Kojak.Core.getValues(this._childFunctionProfiles);
     },
 
-    getClassProtoKojakPaths: function(){
-        return Kojak.Core.getKeys(this._classProtoProfiles);
-    },
-
-    getAllClassKojakPaths: function(){
-        return this.getClassFunctionKojakPaths().concat(this.getClassProtoKojakPaths());
-    },
-
-    addFunctionProfile: function(functionProfile){
-        Kojak.Core.assert(!this._functionProfiles[functionProfile.getKojakPath()], 'why was the same function profile added twice');
-        this._functionProfiles[functionProfile.getKojakPath()] = functionProfile;
-    },
-
-    getFunctionProfiles: function(){
-        return this._functionProfiles;
-    },
-
-    getFunctionProfileKojakPaths: function(){
-        return Kojak.Core.getKeys(this._functionProfiles);
-    },
-
-    getAllClassProfiles: function(){
-        return this._allClassProfiles;
-    },
-
-    getImmediateFunctionCount: function(){
-        return Kojak.Core.getPropCount(this._functionProfiles);
+    getChildFunctionCount: function(){
+        return this.getChildFunctions().length;
     }
 });
