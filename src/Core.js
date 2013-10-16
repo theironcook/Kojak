@@ -3,7 +3,7 @@ window.Kojak = {};
 Kojak.Core = {
 
     // Enums / constants for non config code
-    CLASS: 'CLASS',
+    CLAZZ: 'CLAZZ',
     FUNCTION: 'FUNCTION',
     PAKAGE: 'PAKAGE',
     _REGEX_ALPHA: /^[A-Za-z]+$/,
@@ -11,7 +11,7 @@ Kojak.Core = {
     // fields
     _uniqueId: 0,
 
-    // Extends obj with {} values. Typically used for creating 'classes'
+    // Extends obj with {} values. Typically used for creating 'clazzes'
     extend: function(obj) {
         var args, argCount, arg;
 
@@ -102,14 +102,14 @@ Kojak.Core = {
         return uq;
     },
 
-    // Kojak types - Class, Function, Pakage, undefined
+    // Kojak types - Clazz, Function, Pakage, undefined
     inferKojakType: function(objName, obj){
         var firstChar;
 
         if(obj && Kojak.Core.isFunction(obj)){
             firstChar = objName.substring(0, 1);
             if(Kojak.Core.isStringOnlyAlphas(firstChar) && firstChar === firstChar.toUpperCase()){
-                return Kojak.Core.CLASS;
+                return Kojak.Core.CLAZZ;
             }
             else {
                 return Kojak.Core.FUNCTION;
@@ -213,7 +213,7 @@ Kojak.Core = {
 };
 
 // Add the isXXX type checkers
-['Arguments', 'Function', 'String', 'Number', 'Array', 'Date', 'RegExp'].forEach(function(name) {
+['Arguments', 'Function', 'String', 'Number', 'Array', 'Date', 'RegExp', 'Boolean'].forEach(function(name) {
     Kojak.Core['is' + name] = function(o) {
         return Object.prototype.toString.call(o) === '[object ' + name + ']';
     };

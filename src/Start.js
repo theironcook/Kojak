@@ -1,17 +1,24 @@
 
+// See if the Browser can support the features that Kojak needs
+if(!Object && Object.defineProperty){
+    throw('Kojak requires the function Object.defineProperty');
+}
+// todo - other feature detection
+
+
 // Loads configuration from local storage
 Kojak.Config.load();
 Kojak.instrumentor = new Kojak.Instrumentor();
 
-switch(Kojak.Config.getAutoStart()){
+switch(Kojak.Config.getAutoStartInstrumentation()){
     case Kojak.Config.AUTO_START_IMMEDIATE:
-        console.log('Starting Kojak immediately.  Kojak should have been the last included JavaScript code in the browser for this to work.');
+        console.log('Running Kojak.instrumentor.instrument() immediately.  Kojak should have been the last included JavaScript code in the browser for this to work.');
         Kojak.instrumentor.instrument();
         break;
     case Kojak.Config.AUTO_ON_JQUERY_LOAD:
         if(window.jQuery && window.jQuery.ready){
             jQuery(document).ready(function(){
-                console.log('Starting Kojak in the jQuery.ready handler.');
+                console.log('Running Kojak.instrumentor.instrument() in the jQuery.ready handler.');
                 Kojak.instrumentor.instrument();
             });
         }
@@ -21,23 +28,39 @@ switch(Kojak.Config.getAutoStart()){
         break;
     case Kojak.Config.AUTO_DELAYED:
         setTimeout(function(){
-            console.log('Starting Kojak after the auto delay of ' + Kojak.Formatter.number(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
+            console.log('Running Kojak.instrumentor.instrument() after the auto delay of ' + Kojak.Formatter.number(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
             Kojak.instrumentor.instrument();
         }, Kojak.Config.getAutoStartDelay());
         break;
 }
 
-// Convenience shortcuts if there are no conflicts
-if(!window.K){
-    // Do not use these in code - just a convenience for typing in the console
-    window.K = Kojak;
-    window.K.C = Kojak.Config;
-    window.K.I = Kojak.instrumentor;
-    window.K.R = Kojak.Report;
-}
-else {
-    console.log('Warning, the window.K variable already existed.  Kojak shortcuts will not exist.');
+if(Kojak.Config.getEnableNetWatcher()){
+    Kojak.netWatcher = new Kojak.NetWatcher();
+    // For now, just start watching network traffic immediately
+    Kojak.netWatcher.start();
 }
 
+// Convenience shortcuts if there are no conflicts
+// Do not use these in code - just a convenience for typing in the console
+if(!window.kConfig){
+    window.kConfig = Kojak.Config;
+}
+else {
+    console.log('Warning, the window.kConfig variable already existed.  Kojak shortcut will not exist.');
+}
+
+if(!window.kInst){
+    window.kInst = Kojak.instrumentor;
+}
+else {
+    console.log('Warning, the window.kInst variable already existed.  Kojak shortcut will not exist.');
+}
+
+if(!window.kRep){
+    window.kRep = Kojak.Report;
+}
+else {
+    console.log('Warning, the window.kRep variable already existed.  Kojak shortcut will not exist.');
+}
 
 

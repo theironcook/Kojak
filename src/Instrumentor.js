@@ -1,7 +1,5 @@
 /* jshint -W083 */
 
-// It's possible I might reuse this instance in multiple contexts some day.
-
 Kojak.Instrumentor = function () {
     this._hasInstrumented = false;
     this._lastCheckpointTime = undefined;
@@ -21,9 +19,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         var candidates;
 
         try {
-            if (this._hasInstrumented) {
-                throw 'Code already instrumented';
-            }
+            Kojak.Core.assert(!this.hasInstrumented(), 'The code has already been instrumented');
 
             this._hasInstrumented = true;
 
@@ -83,7 +79,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                         child = pakage[childName];
                         childKojakType = Kojak.Core.inferKojakType(childName, child);
 
-                        if(childKojakType === Kojak.Core.CLASS || childKojakType === Kojak.Core.FUNCTION ){
+                        if(childKojakType === Kojak.Core.CLAZZ || childKojakType === Kojak.Core.FUNCTION ){
                             if(!this._shouldIgnoreFunction(pakagePath, childName)){
                                 if(!child._kFid){
                                     child._kFid = Kojak.Core.uniqueId();
@@ -105,7 +101,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                         if(childKojakType === Kojak.Core.PAKAGE){
                             curPakageNames.push(pakagePath + '.' + childName);
                         }
-                        else if(childKojakType === Kojak.Core.CLASS){
+                        else if(childKojakType === Kojak.Core.CLAZZ){
                             // Possibly treat a clazz as a possible pakage?
                             curPakageNames.push(pakagePath + '.' + childName);
 
@@ -118,9 +114,9 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 // If treating clazzes as a possible pakages we need to check for that here and drill down to the prototype.
                 // This only happens when a clazz was passed in as one of the original pakages in Config
                 pakageName = Kojak.Core.getObjName(pakagePath);
-                if(   Kojak.Core.inferKojakType(pakageName, pakage) === Kojak.Core.CLASS &&
+                if(   Kojak.Core.inferKojakType(pakageName, pakage) === Kojak.Core.CLAZZ &&
                     ! pakage.prototype._kPath){
-                    console.log('---found PACKAGE that is a class ', pakagePath);
+                    console.log('---found PACKAGE that is a clazz ', pakagePath);
                     curPakageNames.push(pakagePath + '.prototype');
                 }
             }

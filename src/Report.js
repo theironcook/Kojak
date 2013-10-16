@@ -237,6 +237,11 @@ Kojak.Report = {
     callPaths: function(funcPath){
         var funcWrapper, kFProfile, callPaths, callPath, count, sorted = [], pathsReport = [], summaryReport = [];
 
+        if(!Kojak.instrumentor.hasInstrumented()){
+            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            return;
+        }
+
         funcWrapper = Kojak.Core.isString(funcPath) ? Kojak.Core.getContext(funcPath) : funcPath;
         Kojak.Core.assert(funcWrapper, 'Function not found.');
         kFProfile = funcWrapper._kFProfile;
@@ -267,6 +272,53 @@ Kojak.Report = {
 
         console.log('\n\tRemember, only profiled functions show up in call paths.');
         console.log('\tAnonymous functions with no references are never profiled.');
+    },
+
+    netCalls: function(){
+        var netProfiles, urlBase, netProfile, sorted = [], report = [];
+
+        if(!Kojak.netWatcher){
+            console.log('The NetWatcher is not loaded.  Have you set Kojak.Config.setEnableNetWatcher(true)?');
+            return;
+        }
+
+        netProfiles = Kojak.netWatcher.getNetProfiles();
+        for(urlBase in netProfiles){
+            netProfile = netProfiles[urlBase];
+            sorted.push({totalCallTime: netProfile.getTotalCallTime(), netProfile: netProfile});
+        }
+
+        sorted = sorted.sort(function(a, b){
+            return b.totalCallTime - a.totalCallTime;
+        });
+
+        report.push(['--urlBase--', '--urlParameters--', '--When Called--', '--Call Time--', '--Size (bytes)--', '--Obj Count--']);
+
+        sorted.forEach(function(item){
+            var addedUrlBase = false;
+
+            item.netProfile.getCallsSortedByDate().forEach(function(netProfileCall){
+                var reportLine = [];
+
+                if(!addedUrlBase){
+                    reportLine.push(item.netProfile.getUrlBase());
+                    addedUrlBase = true;
+                }
+                else {
+                    reportLine.push('');
+                }
+
+                reportLine.push(netProfileCall.getUrlParams());
+                reportLine.push(netProfileCall.getDate().toString('hh:mm:ss tt'));
+                reportLine.push(netProfileCall.getCallTime());
+                reportLine.push(netProfileCall.getResponseSize());
+                reportLine.push(netProfileCall.getObjCount());
+
+                report.push(reportLine);
+            });
+        });
+
+        Kojak.Formatter.formatReport(report);
     },
 
     // *****************************************************************************************************************

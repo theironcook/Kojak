@@ -17,6 +17,9 @@ module.exports = function(grunt){
             'src/Formatter.js',
             'src/FunctionProfile.js',
             'src/Instrumentor.js',
+            'src/NetProfile.js',
+            'src/NetProfileCall.js',
+            'src/NetWatcher.js',
             'src/Report.js',
             'src/Start.js'
         ],

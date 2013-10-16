@@ -28,17 +28,17 @@ Kojak.Config = {
         this._configValues = this._loadLocalStorage();
     },
 
-    getAutoStart: function(){
-        return this._configValues.autoStart;
+    getAutoStartInstrumentation: function(){
+        return this._configValues.autoStartInstrumentation;
     },
 
-    setAutoStart: function (val) {
+    setAutoStartInstrumentation: function (val) {
         Kojak.Core.assert([Kojak.Config.AUTO_START_NONE, Kojak.Config.AUTO_START_IMMEDIATE, Kojak.Config.AUTO_ON_JQUERY_LOAD, Kojak.Config.AUTO_DELAYED].indexOf(val) !== -1, 'Invalid auto start option \'' + val + '\'.');
 
-        this._configValues.autoStart = val;
+        this._configValues.autoStartInstrumentation = val;
         this._save();
 
-        console.log('autoStart updated');
+        console.log('autoStartInstrumentation updated');
         if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
@@ -47,6 +47,20 @@ Kojak.Config = {
             console.log('setting a default auto start delay');
             this.setAutoStartDelay(4000);
         }
+    },
+
+    getEnableNetWatcher: function(){
+        return this._configValues.enableNetWatcher;
+    },
+
+    setEnableNetWatcher: function (val) {
+        Kojak.Core.assert(Kojak.Core.isBoolean(val), 'Invalid enableNetWatcher option \'' + val + '\'.');
+
+        this._configValues.enableNetWatcher = val;
+        this._save();
+
+        console.log('enableNetWatcher updated');
+        console.log('reload your browser to notice the change.');
     },
 
     // *****************************************************************************************************************
@@ -92,51 +106,6 @@ Kojak.Config = {
         return this._configValues.includedPackages;
     },
     // Included packages
-    // *****************************************************************************************************************
-
-    // *****************************************************************************************************************
-    // Included classes
-    addIncludedClass: function (clz) {
-        Kojak.Core.assert(this._configValues.includedClasses.indexOf(clz) === -1, 'Class is already included');
-
-        this._configValues.includedClasses.push(clz);
-        this._save();
-
-        console.log('includedClasses updated');
-        if(Kojak.instrumentor.hasInstrumented()){
-            console.log('reload your browser to notice the change');
-        }
-    },
-
-    setIncludedClasses: function (clazzes) {
-        Kojak.Core.assert(Kojak.Core.isArray(clazzes), 'Only pass an array of strings for the included class names');
-
-        this._configValues.includedClasses = clazzes;
-        this._save();
-
-        console.log('includedClasses updated');
-        if(Kojak.instrumentor.hasInstrumented()){
-            console.log('reload your browser to notice the change.');
-        }
-    },
-
-    removeIncludedClass: function (clz) {
-        var pathIndex = this._configValues.includedClasses.indexOf(clz);
-        Kojak.Core.assert(pathIndex !== -1, 'Class is not currently included.');
-
-        this._configValues.includedClasses.splice(pathIndex, 1);
-        this._save();
-
-        console.log('included path removed');
-        if(Kojak.instrumentor.hasInstrumented()){
-            console.log('reload your browser to notice the change.');
-        }
-    },
-
-    getIncludedClasses: function(){
-        return this._configValues.includedClasses;
-    },
-    // Included classes
     // *****************************************************************************************************************
 
     // *****************************************************************************************************************
@@ -291,9 +260,9 @@ Kojak.Config = {
             version: Kojak.Config.CURRENT_VERSION,
             realTimeFunctionLogging: false,
             includedPackages: [],
-            includedClasses: [],
             excludedPaths: [],
-            autoStart: Kojak.Config.AUTO_START_NONE
+            autoStartInstrumentation: Kojak.Config.AUTO_START_NONE,
+            enableNetWatcher: false
         };
     }
 
