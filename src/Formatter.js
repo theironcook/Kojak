@@ -20,7 +20,7 @@ Kojak.Formatter = {
         return val;
     },
 
-    millis: function(num){
+    number: function(num){
         var numAsString, decimals, integers, integerCount, integersWithCommas = '';
         numAsString = num.toFixed(2);
         decimals =  numAsString.substring(numAsString.indexOf('.'));
@@ -55,7 +55,7 @@ Kojak.Formatter = {
                 fieldVal = row[fieldCount];
 
                 if(Kojak.Core.isNumber(fieldVal)){
-                    row[fieldCount] = fieldVal = Kojak.Formatter.millis(fieldVal);
+                    row[fieldCount] = fieldVal = Kojak.Formatter.number(fieldVal);
                 }
 
                 fieldVal += '  ';

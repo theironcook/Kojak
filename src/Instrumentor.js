@@ -31,11 +31,13 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
             this._processFunctionCandidates(candidates);
             this._findUniqueClazzPaths();
 
-            console.log('Kojak has completed instrumenting.  Run Kojak.Report.instrumentedCode() to see what has been instrumented');
+            console.log('Kojak has completed instrumenting.  Run Kojak.Report.instrumentedCode() to see what functions have been instrumented');
         }
         catch (exception) {
             console.log('Error, Kojak instrument has failed ', exception);
-            console.log('Stack:\n', exception.stack);
+            if(exception.stack){
+                console.log('Stack:\n', exception.stack);
+            }
         }
     },
 
@@ -246,7 +248,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         functionProfile.pushStartTime(new Date(), this._stackContexts.join(' > '));
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {
-            console.log(Kojak.Formatter.makeTabs(this._stackLevel) + 'start: ' + functionProfile.getKPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
+            console.log(Kojak.Formatter.makeTabs(this._stackLevel) + 'start: ' + functionProfile.getKPath(), Kojak.Formatter.number(functionProfile.getIsolatedTime()));
         }
     },
 
@@ -264,7 +266,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         this._stackContexts.pop();
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {
-            console.log(Kojak.Formatter.makeTabs(this._stackLevel + 1) + 'stop:  ' + functionProfile.getKPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
+            console.log(Kojak.Formatter.makeTabs(this._stackLevel + 1) + 'stop:  ' + functionProfile.getKPath(), Kojak.Formatter.number(functionProfile.getIsolatedTime()));
         }
     },
 

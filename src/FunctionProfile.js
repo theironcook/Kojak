@@ -81,6 +81,10 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
         return this._callCount;
     },
 
+    getCallPaths: function(){
+        return this._callPaths;
+    },
+
     getIsolatedTime: function(){
         return this._isolatedTime;
     },

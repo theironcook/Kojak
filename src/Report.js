@@ -4,8 +4,11 @@ Kojak.Report = {
 
     // Default function options
     _INST_CODE_DEFAULT_OPTS: {},
-    _FUNC_PROFILE_DEFAULT_OPTS: {maxRows: 20, sortProperty: 'IsolatedTime'},
+    _FUNC_PROFILE_DEFAULT_OPTS: {max: 20, sortBy: 'IsolatedTime'},
 
+    // opts are
+    //  filter: a string or an array of strings.  If a function's kPath partially matches any of the filter strings it's included
+    //  verbose: true.  If you want to see each individual named function
     instrumentedCode: function(opts){
         var optsWereEmpty, clazzPaths, report = [], totalClazzes = 0, totalFuncs = 0;
 
@@ -63,8 +66,8 @@ Kojak.Report = {
 
             Kojak.Formatter.formatReport(report);
 
-            console.log('\n\tNumber of clazzes reported: ' + Kojak.Formatter.millis(totalClazzes));
-            console.log('\tNumber of functions reported: ' + Kojak.Formatter.millis(totalFuncs));
+            console.log('\n\tNumber of clazzes reported: ' + Kojak.Formatter.number(totalClazzes));
+            console.log('\tNumber of functions reported: ' + Kojak.Formatter.number(totalFuncs));
 
             if(opts.filter){
                 console.log('\tClazz and function counts are less than what has been instrumented in your application');
@@ -72,11 +75,14 @@ Kojak.Report = {
             }
 
             if(optsWereEmpty){
-                console.log('\n\tOptions for this command are {filter: \'xxx\', verbose: true}');
+                console.log('\n\tOptions for this command are {filter: [\'xxx\', \'yyy\'], verbose: true}');
             }
         }
-        catch(exception){
-            console.log('instrumentedCode failed ' + exception.stack);
+        catch (exception) {
+            console.log('Error, Kojak.Report.instrumentedCode has failed ', exception);
+            if(exception.stack){
+                console.log('Stack:\n', exception.stack);
+            }
         }
     },
 
@@ -126,64 +132,141 @@ Kojak.Report = {
 
 
     funcPerf: function(opts){
-        var optsWereEmpty;
-
-        try {
-            optsWereEmpty = !opts;
-            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS);
-
-            this._functionProfileProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount']);
-        }
-        catch(exception){
-            console.log('functionProfiles failed ' + exception.stack);
-        }
+        this._functionPerfProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount']);
     },
 
     funcPerfAfterCheckpoint: function(opts){
-        var optsWereEmpty;
+        if(!Kojak.instrumentor.getLastCheckpointTime()){
+            console.log('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
+            return;
+        }
+
+        this._functionPerfProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
+    },
+
+
+    // opts are
+    //  max: a number - how many rows do you want to show
+    //  filter: a string or an array of strings.  If a function's kPath partially matches any of the filter strings it's included
+    _functionPerfProps: function(opts, props){
+        var profilesWithData = [],
+            report = [],
+            reportRow,
+            profileCount,
+            kFProfile,
+            fieldCount,
+            totals = {},
+            totalsRow = ['Totals across all instrumented functions: '];
+
+        if(!Kojak.instrumentor.hasInstrumented()){
+            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            return;
+        }
 
         try {
-            if(!Kojak.instrumentor.getLastCheckpointTime()){
-                console.log('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
-                return;
+            opts = Kojak.Core.extend(Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS, opts);
+
+            if(opts.filter){
+                Kojak.Core.assert( Kojak.Core.isString(opts.filter) || Kojak.Core.isStringArray(opts.filter),
+                    'filter must be a string or an array of strings');
             }
 
-            optsWereEmpty = !opts;
-            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS);
+            if(opts.max){
+                Kojak.Core.assert(Kojak.Core.isNumber(opts.max) && opts.max > 0, 'max should be a number greater than 0');
+            }
 
-            this._functionProfileProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
+            Kojak.instrumentor.getFunctionProfiles().forEach(function(kFProfile){
+                if(!opts.filter || this._matchesAnyFilter(opts.filter, kFProfile.getKPath())){
+                    if(kFProfile.getProperty(opts.sortBy)){
+                        profilesWithData.push(kFProfile);
+                    }
+                }
+            }.bind(this));
+
+            profilesWithData.sort(function(a, b){
+                return b.getProperty(opts.sortBy) - a.getProperty(opts.sortBy);
+            });
+
+            reportRow = [];
+            props.forEach(function(prop){reportRow.push('--' + prop + '--');});
+            report.push(reportRow);
+
+            for (profileCount = 0; profileCount < profilesWithData.length && profileCount < opts.max; profileCount++) {
+                kFProfile = profilesWithData[profileCount];
+
+                reportRow = [];
+                for(fieldCount = 0; fieldCount < props.length; fieldCount++){
+                    reportRow.push(kFProfile.getProperty(props[fieldCount]));
+                }
+                report.push(reportRow);
+            }
+
+            // function totals
+            Kojak.instrumentor.getFunctionProfiles().forEach(function(kFProfile){
+                props.forEach(function(prop){
+                    var val;
+
+                    if(prop !== 'KPath'){
+                        val = kFProfile.getProperty(prop);
+                        if(Kojak.Core.isNumber(val)){
+                            if(!totals[prop]){
+                                totals[prop] = 0;
+                            }
+                            totals[prop] += val;
+                        }
+                    }
+                }.bind(this));
+            }.bind(this));
+
+            for(var prop in totals){
+                totalsRow.push(totals[prop]);
+            }
+            report.push(totalsRow);
+
+            console.log('Top ' + opts.max + ' functions displayed sorted by ' + opts.sortBy + (opts.filter ? ' based on your filter: \'' + opts.filter: '\''));
+            Kojak.Formatter.formatReport(report);
         }
-        catch(exception){
-            console.log('functionProfiles failed ' + exception.stack);
+        catch (exception) {
+            console.log('Error, Kojak.Report.funcPerf has failed ', exception);
+            if(exception.stack){
+                console.log('Stack:\n', exception.stack);
+            }
         }
     },
 
-    _functionProfileProps: function(opts, props){
-        var profilesWithData = [], report = [], reportRow, profileCount, profile, fieldCount;
+    callPaths: function(funcPath){
+        var funcWrapper, kFProfile, callPaths, callPath, count, sorted = [], pathsReport = [], summaryReport = [];
 
-        Kojak.instrumentor.getFunctionProfiles().forEach(function(profile){
-            if(profile.getProperty(opts.sortProperty)){
-                profilesWithData.push(profile);
-            }
-        });
+        funcWrapper = Kojak.Core.isString(funcPath) ? Kojak.Core.getContext(funcPath) : funcPath;
+        Kojak.Core.assert(funcWrapper, 'Function not found.');
+        kFProfile = funcWrapper._kFProfile;
+        Kojak.Core.assert(kFProfile, 'Function profile not found.  Are you sure it was included to be profiled?');
 
-        profilesWithData.sort(function(a, b){
-            return b.getProperty(opts.sortProperty) - a.getProperty(opts.sortProperty);
-        });
-
-        report.push(props);
-
-        for (profileCount = 0; profileCount < profilesWithData.length && profileCount < opts.maxRows; profileCount++) {
-            profile = profilesWithData[profileCount];
-
-            reportRow = [];
-            for(fieldCount = 0; fieldCount < props.length; fieldCount++){
-                reportRow.push(profile.getProperty(props[fieldCount]));
-            }
-            report.push(reportRow);
+        callPaths = kFProfile.getCallPaths();
+        for(callPath in callPaths){
+            count = callPaths[callPath];
+            sorted.push({path: callPath, count: count});
         }
 
-        Kojak.Formatter.formatReport(report);
+        sorted = sorted.sort(function(a, b){
+            return b.count - a.count;
+        });
+
+        pathsReport.push(['--Call Count--', '--Invocation Path--']);
+        sorted.forEach(function(item){
+            pathsReport.push([item.count, item.path]);
+        }.bind(this));
+
+        Kojak.Formatter.formatReport(pathsReport);
+
+        console.log();
+        summaryReport.push(['IsolatedTime: ', kFProfile.getIsolatedTime()]);
+        summaryReport.push(['WholeTime: ', kFProfile.getWholeTime()]);
+        summaryReport.push(['CallCount: ', kFProfile.getCallCount()]);
+        Kojak.Formatter.formatReport(summaryReport);
+
+        console.log('\n\tRemember, only profiled functions show up in call paths.');
+        console.log('\tAnonymous functions with no references are never profiled.');
     },
 
     // *****************************************************************************************************************

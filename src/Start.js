@@ -21,7 +21,7 @@ switch(Kojak.Config.getAutoStart()){
         break;
     case Kojak.Config.AUTO_DELAYED:
         setTimeout(function(){
-            console.log('Starting Kojak after the auto delay of ' + Kojak.Formatter.millis(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
+            console.log('Starting Kojak after the auto delay of ' + Kojak.Formatter.number(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
             Kojak.instrumentor.instrument();
         }, Kojak.Config.getAutoStartDelay());
         break;
