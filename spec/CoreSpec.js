@@ -4,7 +4,7 @@ describe('Core suite', function() {
         expect(Kojak.Core).toBeDefined();
         expect(Kojak.Core.CLASS).toBeDefined();
         expect(Kojak.Core.FUNCTION).toBeDefined();
-        expect(Kojak.Core.PACKAGE).toBeDefined();
+        expect(Kojak.Core.PAKAGE).toBeDefined();
     });
 
     it('Core.extend basics', function() {
@@ -83,6 +83,6 @@ describe('Core suite', function() {
         expect(Kojak.Core.inferKojakType('_func', function(){})).toBe(Kojak.Core.FUNCTION);
         expect(Kojak.Core.inferKojakType('_Func', function(){})).toBe(Kojak.Core.FUNCTION);
         expect(Kojak.Core.inferKojakType('Class', function(){})).toBe(Kojak.Core.CLASS);
-        expect(Kojak.Core.inferKojakType('whatever', {})).toBe(Kojak.Core.PACKAGE);
+        expect(Kojak.Core.inferKojakType('whatever', {})).toBe(Kojak.Core.PAKAGE);
     });
 });

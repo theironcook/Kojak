@@ -21,87 +21,18 @@
 
         com.hotidea.fakeK = com.hotidea; // make sure Kojak doesn't barf on weird situations like this
 
-        com.hotidea.Class1 = function () {
-        };
-        Kojak.Core.extend(com.hotidea.Class1.prototype, {
-            _number1: 3.14,
-            _string1: 'a string',
-            functionA: function () {
-                blockThread(1.5);
-            },
-            functionB: function () {
+        com.hotidea.Class1 = function(){};
+        com.hotidea.Class1.static1a = function(){};
+        com.hotidea.Class1.prototype.proto1a = function(){};
+        com.hotidea.Class1.prototype.proto1b = function(){};
 
-            },
+        com.hotidea.Class2 = function(){};
+        com.hotidea.Class2.prototype.proto2a = function(){};
+        com.hotidea.Class2.prototype.proto2b = function(){};
+        com.hotidea.Class2.prototype.protoRefToClass1 = com.hotidea.Class1;
 
-            functionC: function(){
-
-            },
-
-            iShouldBeIgnored: {
-                ignoredFunction: function () {console.log('called strangeFunction');},
-                ignoredFunction: function(){}
-            }
-        });
-
-        com.hotidea.RefToClass1 = com.hotidea.Class1; // make sure Kojak doesn't barf on this
-
-        // Set up a child class
-        com.hotidea.Class2 = function () {
-        };
-
-        com.hotidea.Class2.prototype = new com.hotidea.Class1();
-
-        Kojak.Core.extend(com.hotidea.Class2.prototype, {
-            _number2: 3.14,
-            _string2: 'a string',
-            functionC: function () {
-                com.hotidea.Class1.prototype.functionA.call(this);
-                blockThread(1);
-                this.functionD();
-            },
-            functionD: function () {
-                blockThread(.5);
-            }
-        });
-
-        // Kojak should ignore these
-        com.hotidea.number1 = 3.14;
-        com.hotidea.string1 = 'a string';
-
-        com.hotidea.function1 = function () {};
-        com.hotidea.duplicateFunc = com.hotidea.function1;
-
-        com.hotidea.fakeNamespace = {number2: 3.14}; // should be checked even though there are no classes
-        com.hotidea.IamUndefined = undefined;
-
-
-        com.another = {
-            AnotherClass: function(){}
-        };
-
-        Kojak.Core.extend(com.another.AnotherClass, {
-            anotherFunc: function(){}
-        });
-
-        com.utility = {
-            utilA: function(){},
-            utilB: function(){}
-        };
-
-        com.another.utilityFunc = function(){
-
-        };
-
-        window.test = function(){
-            console.log('running test');
-            var c = new com.hotidea.Class2();
-
-            try{
-                c.functionC();
-            } catch(exception){
-                console.log(exception.stack);
-            }
-        }
+        com.hotidea.Class2.prototype.foo = function(){};
+        com.hotidea.Class1.prototype.foo2 = com.hotidea.Class2.prototype.foo;
 
     </script>
 

@@ -16,7 +16,6 @@ module.exports = function(grunt){
             'src/Config.js',
             'src/Formatter.js',
             'src/FunctionProfile.js',
-            'src/ContainerProfile.js',
             'src/Instrumentor.js',
             'src/Report.js',
             'src/Start.js'

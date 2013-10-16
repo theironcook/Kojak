@@ -5,8 +5,11 @@ Kojak.Core = {
     // Enums / constants for non config code
     CLASS: 'CLASS',
     FUNCTION: 'FUNCTION',
-    PACKAGE: 'PACKAGE',
+    PAKAGE: 'PAKAGE',
     _REGEX_ALPHA: /^[A-Za-z]+$/,
+
+    // fields
+    _uniqueId: 0,
 
     // Extends obj with {} values. Typically used for creating 'classes'
     extend: function(obj) {
@@ -99,7 +102,7 @@ Kojak.Core = {
         return uq;
     },
 
-    // Kojak types - Class, Function, Package, undefined
+    // Kojak types - Class, Function, Pakage, undefined
     inferKojakType: function(objName, obj){
         var firstChar;
 
@@ -113,7 +116,7 @@ Kojak.Core = {
             }
         }
         else if(obj && obj.constructor && obj.constructor.prototype === Object.prototype){
-            return Kojak.Core.PACKAGE;
+            return Kojak.Core.PAKAGE;
         }
         else {
             return undefined;
@@ -129,6 +132,10 @@ Kojak.Core = {
         if(!test){
             throw msg;
         }
+    },
+
+    uniqueId: function(){
+        return ++Kojak.Core._uniqueId;
     }
 };
 

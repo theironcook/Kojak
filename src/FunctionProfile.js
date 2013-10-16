@@ -5,7 +5,7 @@ Kojak.FunctionProfile = function (container, functionName, origFunction) {
     this._container = container;
     this._functionName = functionName;
     this._origFunction = origFunction;
-    this._kojakPath = container._kContainerProfile.getKojakPath() + '.' + functionName;
+    this._kPath = container._kPath + '.' + functionName;
 
     this._startTimes = [];
     this._callCount = 0;
@@ -22,9 +22,6 @@ Kojak.FunctionProfile = function (container, functionName, origFunction) {
     };
 
     this._wrappedFunction._kFunctionProfile = this;
-    // Update the original reference to know about this function profile. Useful when you have a function
-    // with multiple references for some reason.
-    origFunction._kOriginal = this;
 };
 
 Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
@@ -45,7 +42,7 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
     },
 
     getKojakPath: function(){
-        return this._kojakPath;
+        return this._kPath;
     },
 
     pushStartTime: function(startTime, callPath){

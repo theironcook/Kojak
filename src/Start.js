@@ -1,36 +1,18 @@
 
-Kojak._hasStarted = false;
-
-Kojak.hasStarted = function(){
-    return Kojak._hasStarted;
-};
-
 // Loads configuration from local storage
 Kojak.Config.load();
 Kojak.instrumentor = new Kojak.Instrumentor();
 
-Kojak.start = function(){
-    console.log('starting Kojak now');
-    Kojak.instrumentor.instrument();
-    Kojak._hasStarted = true;
-};
-
-Kojak.takeCheckpoint = function(){
-    if(!Kojak.hasStarted()){
-        Kojak.start();
-    }
-
-    Kojak.instrumentor.takeCheckpoint();
-};
-
 switch(Kojak.Config.getAutoStart()){
     case Kojak.Config.AUTO_START_IMMEDIATE:
-        Kojak.start();
+        console.log('Starting Kojak immediately.  Kojak should have been the last included JavaScript code in the browser for this to work.');
+        Kojak.instrumentor.instrument();
         break;
     case Kojak.Config.AUTO_ON_JQUERY_LOAD:
         if(window.jQuery && window.jQuery.ready){
             jQuery(document).ready(function(){
-                Kojak.start();
+                console.log('Starting Kojak in the jQuery.ready handler.');
+                Kojak.instrumentor.instrument();
             });
         }
         else {
@@ -39,14 +21,22 @@ switch(Kojak.Config.getAutoStart()){
         break;
     case Kojak.Config.AUTO_DELAYED:
         setTimeout(function(){
-            Kojak.start();
+            console.log('Starting Kojak after the auto delay of ' + Kojak.Formatter.millis(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
+            Kojak.instrumentor.instrument();
         }, Kojak.Config.getAutoStartDelay());
         break;
 }
 
-// Shortcuts if there are no conflicts
+// Convenience shortcuts if there are no conflicts
 if(!window.K){
+    // Do not use these in code - just a convenience for typing in the console
     window.K = Kojak;
+    window.K.C = Kojak.Config;
+    window.K.I = Kojak.instrumentor;
+    window.K.R = Kojak.Report;
+}
+else {
+    console.log('Warning, the window.K variable already existed.  Kojak shortcuts will not exist.');
 }
 
 

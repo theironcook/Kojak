@@ -39,7 +39,7 @@ Kojak.Config = {
         this._save();
 
         console.log('autoStart updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
 
@@ -58,7 +58,7 @@ Kojak.Config = {
         this._save();
 
         console.log('includedPackages updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change');
         }
     },
@@ -70,7 +70,7 @@ Kojak.Config = {
         this._save();
 
         console.log('includedPackages updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -83,7 +83,7 @@ Kojak.Config = {
         this._save();
 
         console.log('included path removed');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -103,7 +103,7 @@ Kojak.Config = {
         this._save();
 
         console.log('includedClasses updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change');
         }
     },
@@ -115,7 +115,7 @@ Kojak.Config = {
         this._save();
 
         console.log('includedClasses updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -128,7 +128,7 @@ Kojak.Config = {
         this._save();
 
         console.log('included path removed');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -141,6 +141,20 @@ Kojak.Config = {
 
     // *****************************************************************************************************************
     // Excluded paths
+    arePathsExcluded: function(){
+        var args = Array.prototype.slice.call(arguments), i, path;
+
+        for(i = 0; i < args.length; i++){
+            path = args[i];
+
+            if(this.isPathExcluded(path)){
+                return true;
+            }
+        }
+
+        return false;
+    },
+
     isPathExcluded: function(path){
         var i, excludePaths = this._configValues.excludedPaths, isExcluded = false;
 
@@ -165,7 +179,7 @@ Kojak.Config = {
         this._save();
 
         console.log('excluded paths updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -178,7 +192,7 @@ Kojak.Config = {
         this._save();
 
         console.log('excluded paths updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -190,7 +204,7 @@ Kojak.Config = {
         this._save();
 
         console.log('excludePaths updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -217,7 +231,7 @@ Kojak.Config = {
         }
 
         console.log('autoStartDelay updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
@@ -233,7 +247,7 @@ Kojak.Config = {
         this._save();
 
         console.log('realTimeFunctionLogging updated');
-        if(Kojak.hasStarted()){
+        if(Kojak.instrumentor.hasInstrumented()){
             console.log('changes should be reflected immediately');
         }
     },

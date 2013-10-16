@@ -51,7 +51,7 @@ Kojak.Report = {
                 }
             }.bind(this));
 
-            report.push(['Total records: ' + Kojak.Formatter.millis(report.length)]);
+            report.push(['Total records: ' + Kojak.Formatter.millis(report.length - 1)]);
 
             Kojak.Formatter.formatReport(report);
 
@@ -86,7 +86,7 @@ Kojak.Report = {
     },
 
     _packageLinesReallyVerbose: function(opts, report, packageProfile){
-        var packageKojakPath = packageProfile.getKojakPath();
+        var packageKojakPath = packageProfile.getKojakPath(), anyChildClassContainers = false;
 
         // Check for static utility functions in the package
         packageProfile.getChildFunctions().forEach(function(childFunctionProfile){
@@ -101,12 +101,15 @@ Kojak.Report = {
         }.bind(this));
 
         packageProfile.getChildClassContainerProfiles().forEach(function(childContainerProfile){
-            var childContainerPath;
+            var childContainerPath, anyChildFunctions = false;
+
+            anyChildClassContainers = true;
             childContainerPath = childContainerProfile.getKojakPath();
 
             if(!opts.filter || this._matchesAnyFilter(opts.filter, packageKojakPath, childContainerPath)){
 
                 childContainerProfile.getChildFunctions().forEach(function(childFunctionProfile){
+                    anyChildFunctions = true;
                     var childFunctionPath = childFunctionProfile.getKojakPath(), reportLine;
 
                     if(!opts.filter || this._matchesAnyFilter(opts.filter, packageKojakPath, childContainerPath, childFunctionPath)){
@@ -118,11 +121,19 @@ Kojak.Report = {
                         report.push(reportLine);
                     }
                 }.bind(this));
+
+                if(!anyChildFunctions){
+                    report.push([packageKojakPath, childContainerPath.replace(packageKojakPath + '.', ''), '<none>', '<none>']);
+                }
             }
         }.bind(this));
+
+        if(!anyChildClassContainers){
+            report.push(packageKojakPath, '<none>', '<none>', '<none>');
+        }
     },
 
-    functionPerformance: function(opts){
+    funcPerf: function(opts){
         var optsWereEmpty;
 
         try {
@@ -136,10 +147,15 @@ Kojak.Report = {
         }
     },
 
-    functionPerformanceAfterCheckpoint: function(opts){
+    funcPerfAfterCheckpoint: function(opts){
         var optsWereEmpty;
 
         try {
+            if(!Kojak.instrumentor.getLastCheckpointTime()){
+                console.log('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
+                return;
+            }
+
             optsWereEmpty = !opts;
             opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULTS);
 

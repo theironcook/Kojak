@@ -1,24 +1,18 @@
 
-Kojak.ContainerProfile = function(kojakPath, container){
-    Kojak.Core.assert(kojakPath, container);
+Kojak.ContainerProfile = function(parent, containerName, container, containerType){
+    Kojak.Core.assert(parent && containerName && container && containerType);
 
-    this._kojakPath = kojakPath;
+    this._parent = parent;
+    this._kojakPath = parent.getKojakPath() + '.' + containerName;
     this._container = container;
+    this._containerType = containerType;
 
     this._childContainerProfiles = {};
     this._childFunctionProfiles = {};
 
-    // calculate the container type
-    if(Kojak.Core.isFunction(container)){
-        this._containerType = Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER;
-    }
-    else if(Kojak.Core.isObject(container)){
-        if(kojakPath.endsWith('.prototype')){
-            this._containerType = Kojak.ContainerProfile.CLASS_PROTOTYPE_CONTAINER;
-        }
-        else {
-            this._containerType = Kojak.ContainerProfile.PACKAGE_CONTAINER;
-        }
+
+    if(this._containerType === Kojak.ContainerProfile.CLASS_FUNCTION_CONTAINER){
+        Kojak.instrumentor._trackOrigFunctionProfiles(container, this);
     }
 };
 
