@@ -21,7 +21,7 @@ Kojak.FunctionProfile = function (container, functionName, origFunction) {
         return returnValue;
     };
 
-    this._wrappedFunction._kFunctionProfile = this;
+    this._wrappedFunction._kFProfile = this;
 };
 
 Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
@@ -41,7 +41,7 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
         return this._wrappedFunction;
     },
 
-    getKojakPath: function(){
+    getKPath: function(){
         return this._kPath;
     },
 

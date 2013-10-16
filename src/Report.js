@@ -2,61 +2,77 @@
 
 Kojak.Report = {
 
-    // Default function parameters
-    _INST_PACKAGE_DEFAULTS: {},
-    _FUNC_PROFILE_DEFAULTS: {maxRows: 20, sortProperty: 'IsolatedTime'},
+    // Default function options
+    _INST_CODE_DEFAULT_OPTS: {},
+    _FUNC_PROFILE_DEFAULT_OPTS: {maxRows: 20, sortProperty: 'IsolatedTime'},
 
     instrumentedCode: function(opts){
-        var optsWereEmpty, packageProfiles, packageNames, packageProfile, report = [], reportLine;
+        var optsWereEmpty, clazzPaths, report = [], totalClazzes = 0, totalFuncs = 0;
+
+        if(!Kojak.instrumentor.hasInstrumented()){
+            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            return;
+        }
 
         optsWereEmpty = !opts;
-        opts = Kojak.Core.extend(opts || {}, Kojak.Report._INST_PACKAGE_DEFAULTS);
+        opts = Kojak.Core.extend(opts || {}, Kojak.Report._INST_CODE_DEFAULT_OPTS);
 
         if(opts && opts.filter){
-            Kojak.Core.assert(Kojak.Core.isString(opts.filter), 'filter must be a string');
+            Kojak.Core.assert( Kojak.Core.isString(opts.filter) || Kojak.Core.isStringArray(opts.filter),
+                               'filter must be a string or an array of strings');
         }
 
         try {
-            console.log('Currently instrumented packages in Kojak: ' + (opts && opts.filter ? '(filtered by \'' + opts.filter + '\')' : ''));
-            packageProfiles = Kojak.instrumentor.getPackageProfiles();
+            console.log('Currently instrumented code in Kojak: ' + (opts.filter ? '(filtered by \'' + opts.filter + '\')' : ''));
 
             // Report header
-            if(opts.reallyVerbose){
-                report.push(['--Package--', '--Class--', '--Function--', '--Call Count--']);
-            }
-            else if(opts.verbose){
-                report.push(['--Package--', '--Class--', '--Function Count--']);
+            if(opts.verbose){
+                report.push(['--Pakage--', '--Clazz--', '--Function--', '--Call Count--']);
             }
             else {
-                report.push(['--Package--', '--Class Count--']);
+                report.push(['--Pakage--', '--Clazz--', '--Function Count--']);
             }
 
             // Report body
-            packageNames = Kojak.Core.getKeys(packageProfiles).sort();
+            clazzPaths = Kojak.instrumentor.getClazzPaths();
 
-            packageNames.forEach(function(packageName){
-                reportLine = [packageName];
-                packageProfile = packageProfiles[packageName];
+            clazzPaths.forEach(function(clazzPath){
+                var clazzPackagePath, clazzName, kFuncProfiles, funcCount = 0;
 
-                if(! opts.filter || this._matchesAnyFilter(opts.filter, packageName)){
-                    if(opts.reallyVerbose){
-                        this._packageLinesReallyVerbose(opts, report, packageProfile);
-                    }
-                    else if(opts.verbose){
-                        this._packageLinesVerbose(opts, report, packageProfile);
+                clazzPackagePath = Kojak.Core.getPakageName(clazzPath);
+                clazzName = Kojak.Core.getClazzName(clazzPath);
+
+                if (!opts.filter || this._matchesAnyFilter(opts.filter, clazzPath, clazzPackagePath, clazzName)) {
+
+                    if (opts.verbose) {
+                        kFuncProfiles = this._getKFuncProfiles(opts, clazzPath);
+                        kFuncProfiles.forEach(function(kFProfile){
+                            report.push([clazzPackagePath, clazzName, kFProfile.getFunctionName(), kFProfile.getCallCount()]);
+                            funcCount++;
+                        }.bind(this));
                     }
                     else {
-                        report.push([packageProfile.getKojakPath(), packageProfile.getChildClassFunctionCount()]);
+                        funcCount = this._getFunctionCount(clazzPath);
+                        report.push([clazzPackagePath, clazzName, funcCount]);
                     }
+
+                    totalFuncs += funcCount;
+                    totalClazzes++;
                 }
             }.bind(this));
 
-            report.push(['Total records: ' + Kojak.Formatter.millis(report.length - 1)]);
-
             Kojak.Formatter.formatReport(report);
 
+            console.log('\n\tNumber of clazzes reported: ' + Kojak.Formatter.millis(totalClazzes));
+            console.log('\tNumber of functions reported: ' + Kojak.Formatter.millis(totalFuncs));
+
+            if(opts.filter){
+                console.log('\tClazz and function counts are less than what has been instrumented in your application');
+                console.log('\tCounts are based off of what has been filtered with \'' + opts.filter + '\'');
+            }
+
             if(optsWereEmpty){
-                console.log('\n// options for this command are {filter: \'xxx\', verbose: true, reallyVerbose: true}');
+                console.log('\n\tOptions for this command are {filter: \'xxx\', verbose: true}');
             }
         }
         catch(exception){
@@ -64,83 +80,59 @@ Kojak.Report = {
         }
     },
 
-    _packageLinesVerbose: function(opts, report, packageProfile){
-        var packageKojakPath = packageProfile.getKojakPath();
+    _getFunctionCount: function(clazzPath){
+        var clazz, childName, child, funcCount = 0;
 
-        if (packageProfile.getChildFunctionCount() > 0) {
-            report.push([packageProfile.getKojakPath(), '<package functions>', packageProfile.getChildFunctionCount()]);
-        }
+        clazz = Kojak.Core.getContext(clazzPath);
+        Kojak.Core.assert(clazz, 'The clazz could not be found: ' + clazzPath);
 
-        packageProfile.getChildClassContainerProfiles().forEach(function(childContainerProfile){
-            var childContainerPath, reportLine;
-            childContainerPath = childContainerProfile.getKojakPath();
+        for(childName in clazz){
+            if(clazz.hasOwnProperty(childName)){
+                child = clazz[childName];
 
-            if(!opts.filter || this._matchesAnyFilter(opts.filter, packageKojakPath, childContainerPath)){
-                reportLine = [ packageKojakPath,
-                               childContainerPath.replace(packageKojakPath + '.', ''),
-                               childContainerProfile.getChildFunctionCount()];
-
-                report.push(reportLine);
-            }
-        }.bind(this));
-    },
-
-    _packageLinesReallyVerbose: function(opts, report, packageProfile){
-        var packageKojakPath = packageProfile.getKojakPath(), anyChildClassContainers = false;
-
-        // Check for static utility functions in the package
-        packageProfile.getChildFunctions().forEach(function(childFunctionProfile){
-            var childFunctionKojakPath = childFunctionProfile.getKojakPath();
-
-            if (!opts.filter || this._matchesAnyFilter(opts.filter, childFunctionKojakPath)) {
-                report.push([ packageKojakPath,
-                              '<package function>',
-                              childFunctionKojakPath.replace(packageKojakPath + '.', ''),
-                              childFunctionProfile.getCallCount()]);
-            }
-        }.bind(this));
-
-        packageProfile.getChildClassContainerProfiles().forEach(function(childContainerProfile){
-            var childContainerPath, anyChildFunctions = false;
-
-            anyChildClassContainers = true;
-            childContainerPath = childContainerProfile.getKojakPath();
-
-            if(!opts.filter || this._matchesAnyFilter(opts.filter, packageKojakPath, childContainerPath)){
-
-                childContainerProfile.getChildFunctions().forEach(function(childFunctionProfile){
-                    anyChildFunctions = true;
-                    var childFunctionPath = childFunctionProfile.getKojakPath(), reportLine;
-
-                    if(!opts.filter || this._matchesAnyFilter(opts.filter, packageKojakPath, childContainerPath, childFunctionPath)){
-                        reportLine = [ packageKojakPath,
-                                       childContainerPath.replace(packageKojakPath + '.', ''),
-                                       childFunctionPath.replace(childContainerPath + '.', ''),
-                                       childFunctionProfile.getCallCount()];
-
-                        report.push(reportLine);
-                    }
-                }.bind(this));
-
-                if(!anyChildFunctions){
-                    report.push([packageKojakPath, childContainerPath.replace(packageKojakPath + '.', ''), '<none>', '<none>']);
+                if(child && child._kFProfile){
+                    funcCount++;
                 }
             }
-        }.bind(this));
-
-        if(!anyChildClassContainers){
-            report.push(packageKojakPath, '<none>', '<none>', '<none>');
         }
+
+        return funcCount;
     },
+
+    _getKFuncProfiles: function(opts, clazzPath){
+        var clazz, childName, child, kFuncProfiles = [];
+
+        clazz = Kojak.Core.getContext(clazzPath);
+        Kojak.Core.assert(clazz, 'The clazz could not be found: ' + clazzPath);
+
+        for(childName in clazz){
+            if(clazz.hasOwnProperty(childName)){
+                child = clazz[childName];
+
+                if(child && child._kFProfile){
+                    if(! opts.filter || this._matchesAnyFilter(opts.filter, childName, child._kFProfile.getKPath())){
+                        kFuncProfiles.push(child._kFProfile);
+                    }
+                }
+            }
+        }
+
+        kFuncProfiles = kFuncProfiles.sort(function(a, b){
+            return b.getFunctionName() - a.getFunctionName();
+        });
+
+        return kFuncProfiles;
+    },
+
 
     funcPerf: function(opts){
         var optsWereEmpty;
 
         try {
             optsWereEmpty = !opts;
-            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULTS);
+            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS);
 
-            this._functionProfileProps(opts, ['KojakPath', 'IsolatedTime', 'WholeTime', 'CallCount']);
+            this._functionProfileProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount']);
         }
         catch(exception){
             console.log('functionProfiles failed ' + exception.stack);
@@ -157,9 +149,9 @@ Kojak.Report = {
             }
 
             optsWereEmpty = !opts;
-            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULTS);
+            opts = Kojak.Core.extend(opts || {}, Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS);
 
-            this._functionProfileProps(opts, ['KojakPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
+            this._functionProfileProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
         }
         catch(exception){
             console.log('functionProfiles failed ' + exception.stack);
@@ -219,15 +211,5 @@ Kojak.Report = {
         });
 
         return anyMatches;
-    },
-
-    _getLastPathValue: function(path){
-        if(path.endsWith('prototype')){
-            path = path.replace('.prototype', '');
-            return path.substring(path.lastIndexOf('.') + 1) + '.prototype';
-        }
-        else {
-            return path.substring(path.lastIndexOf('.') + 1);
-        }
     }
 };

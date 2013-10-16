@@ -9,6 +9,10 @@ Kojak.Formatter = {
     },
 
     appendPadding: function(val, paddingLength){
+        if(!val){
+            val = '';
+        }
+
         while(val.length < paddingLength){
             val += ' ';
         }

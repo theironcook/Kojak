@@ -8,7 +8,7 @@ Kojak.Instrumentor = function () {
 
     this._origFunctions = {};
     this._functionProfiles = [];
-    this._pakagePaths = [];
+    this._clazzPaths = [];
 
     this._stackLevel = -1;
     this._stackLevelCumTimes = {};
@@ -29,7 +29,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
 
             candidates = this._findFunctionCandidates();
             this._processFunctionCandidates(candidates);
-            this._findUniquePakagePaths();
+            this._findUniqueClazzPaths();
 
             console.log('Kojak has completed instrumenting.  Run Kojak.Report.instrumentedCode() to see what has been instrumented');
         }
@@ -43,6 +43,9 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         return this._hasInstrumented;
     },
 
+    getClazzPaths: function(){
+        return this._clazzPaths;
+    },
 
     // Root through all included pakages and find candidate functions
     // These functions might be clazzes or just plain old functions
@@ -54,6 +57,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
             curPakageNames,
             pakagePath,
             pakage,
+            pakageName,
             childName,
             child,
             childKojakType;
@@ -68,7 +72,8 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 // Now the pakage can be self aware it's own path
                 pakage._kPath = pakagePath;
 
-                // Define the _kPath property so that it is not enumerable.  Otherwise the _kPath might show up incorrectly in iterators
+                // Define the _kPath property so that it is not enumerable.
+                // Otherwise the _kPath might show up incorrectly in iterators
                 Object.defineProperty(pakage, '_kPath', {enumerable: false});
 
                 for (childName in pakage) {
@@ -78,16 +83,18 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
 
                         if(childKojakType === Kojak.Core.CLASS || childKojakType === Kojak.Core.FUNCTION ){
                             if(!this._shouldIgnoreFunction(pakagePath, childName)){
-                                if(!child._kFunctionId){
-                                    child._kFunctionId = Kojak.Core.uniqueId();
-                                    // Define the _kPath property so that it is not enumerable.  Otherwise the _kPath might show up incorrectly in iterators
-                                    Object.defineProperty(child, '_kFunctionId', {enumerable: false});
+                                if(!child._kFid){
+                                    child._kFid = Kojak.Core.uniqueId();
+                                    // Define the _kPath property so that it is not enumerable.
+                                    // Otherwise the _kPath might show up incorrectly in iterators
+                                    Object.defineProperty(child, '_kFid', {enumerable: false});
 
-                                    this._origFunctions[child._kFunctionId] = child;
-                                    candidates[child._kFunctionId] = [pakagePath + '.' + childName];
+                                    this._origFunctions[child._kFid] = child;
+                                    candidates[child._kFid] = [pakagePath + '.' + childName];
                                 }
                                 else {
-                                    candidates[child._kFunctionId].push(pakagePath + '.' + childName);
+                                    // there is a duplicate ref to the same clazz or function
+                                    candidates[child._kFid].push(pakagePath + '.' + childName);
                                 }
                             }
                         }
@@ -104,6 +111,15 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                             curPakageNames.push(pakagePath + '.' + childName + '.prototype');
                         }
                     }
+                }
+
+                // If treating clazzes as a possible pakages we need to check for that here and drill down to the prototype.
+                // This only happens when a clazz was passed in as one of the original pakages in Config
+                pakageName = Kojak.Core.getObjName(pakagePath);
+                if(   Kojak.Core.inferKojakType(pakageName, pakage) === Kojak.Core.CLASS &&
+                    ! pakage.prototype._kPath){
+                    console.log('---found PACKAGE that is a class ', pakagePath);
+                    curPakageNames.push(pakagePath + '.prototype');
                 }
             }
         }
@@ -167,7 +183,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     _isFuncAClazz: function(fullFuncPath){
         var funcName, firstChar;
 
-        funcName = fullFuncPath.substring(fullFuncPath.lastIndexOf('.') + 1);
+        funcName = Kojak.Core.getObjName(fullFuncPath);
         firstChar = funcName.substring(0, 1);
         return Kojak.Core.isStringOnlyAlphas(firstChar) && firstChar === firstChar.toUpperCase();
     },
@@ -175,13 +191,13 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     _instrumentFunction: function(fullFuncPath, origFunc){
         var containerPath, container, funcName, funcProfile;
 
-        containerPath = fullFuncPath.substring(0, fullFuncPath.lastIndexOf('.'));
-        funcName = fullFuncPath.substring(fullFuncPath.lastIndexOf('.') + 1);
+        containerPath = Kojak.Core.getPath(fullFuncPath);
+        funcName = Kojak.Core.getObjName(fullFuncPath);
 
         container = Kojak.Core.getContext(containerPath);
 
         if(!container){
-            console.log('Error, the container missing for function path: ' + fullFuncPath);
+            console.log('Kojak error, the function path could not be located: ' + fullFuncPath);
         }
         else{
             funcProfile = new Kojak.FunctionProfile(container, funcName, origFunc);
@@ -190,22 +206,20 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         }
     },
 
-    _findUniquePakagePaths: function(){
-        var uniquePaths = {}, functionKPath, pakagePath, pakagePaths = [];
+    _findUniqueClazzPaths: function(){
+        var uniquePaths = {}, functionKPath, clazzPath;
 
         this._functionProfiles.forEach(function(functionProfile){
-            functionKPath = functionProfile.getKojakPath();
-            pakagePath = functionKPath.substring(0, functionKPath.lastIndexOf('.'));
+            functionKPath = functionProfile.getKPath();
+            clazzPath = Kojak.Core.getPath(functionKPath);
 
-            if(!uniquePaths[pakagePath]){
-                uniquePaths[pakagePath] = true;
-                pakagePaths.push(pakagePath);
+            if(!uniquePaths[clazzPath]){
+                uniquePaths[clazzPath] = true;
+                this._clazzPaths.push(clazzPath);
             }
         }.bind(this));
 
-        pakagePaths.sort();
-
-        // these package paths also include clazzes and clazz.prototypes.
+        this._clazzPaths.sort();
     },
 
     takeCheckpoint: function(){
@@ -227,12 +241,12 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     recordStartFunction: function (functionProfile) {
         this._stackLevel++;
         this._stackLevelCumTimes[this._stackLevel] = 0;
-        this._stackContexts[this._stackLevel] = functionProfile.getKojakPath();
+        this._stackContexts[this._stackLevel] = functionProfile.getKPath();
 
         functionProfile.pushStartTime(new Date(), this._stackContexts.join(' > '));
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {
-            console.log(Kojak.Formatter.makeTabs(this._stackLevel) + 'start: ' + functionProfile.getKojakPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
+            console.log(Kojak.Formatter.makeTabs(this._stackLevel) + 'start: ' + functionProfile.getKPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
         }
     },
 
@@ -250,7 +264,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         this._stackContexts.pop();
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {
-            console.log(Kojak.Formatter.makeTabs(this._stackLevel + 1) + 'stop:  ' + functionProfile.getKojakPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
+            console.log(Kojak.Formatter.makeTabs(this._stackLevel + 1) + 'stop:  ' + functionProfile.getKPath(), Kojak.Formatter.millis(functionProfile.getIsolatedTime()));
         }
     },
 

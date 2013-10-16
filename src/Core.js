@@ -123,9 +123,82 @@ Kojak.Core = {
         }
     },
 
+    getPath: function(kPath){
+        Kojak.Core.assert(kPath, 'kPath is not defined');
+        if(kPath.length < 3 || ! kPath.contains('.')){
+            return kPath;
+        }
+        else{
+            return kPath.substring(0, kPath.lastIndexOf('.'));
+        }
+    },
+
+    getObjName: function(kPath){
+        Kojak.Core.assert(kPath, 'kPath is not defined');
+        if(kPath.length < 3 || ! kPath.contains('.')){
+            return kPath;
+        }
+        else{
+            return kPath.substring(kPath.lastIndexOf('.') + 1);
+        }
+    },
+
+    // This will only work with kPaths to clazzes.  If the function name is part of the path this will fail
+    // Use with care
+    getPakageName: function(kPath){
+        var pathParts;
+        Kojak.Core.assert(kPath, 'kPath is not defined');
+        pathParts = kPath.split('.');
+        if(pathParts.length === 1){
+            return kPath;
+        }
+        else {
+            if(pathParts[pathParts.length - 1] === 'prototype'){
+                pathParts = pathParts.splice(0, pathParts.length - 1);
+            }
+            pathParts = pathParts.splice(0, pathParts.length - 1);
+            return pathParts.join('.');
+        }
+    },
+
+    // This will only work with kPaths to clazzes.  If the function name is part of the path this will fail
+    // Use with care
+    getClazzName: function(kPath){
+        var pathParts, clazzName = '';
+        Kojak.Core.assert(kPath, 'kPath is not defined');
+        pathParts = kPath.split('.');
+        if(pathParts.length === 1){
+            return '';
+        }
+        else {
+            if(pathParts[pathParts.length - 1] === 'prototype'){
+                clazzName = '.prototype';
+                pathParts = pathParts.splice(0, pathParts.length - 1);
+            }
+            return pathParts[pathParts.length - 1] + clazzName;
+        }
+    },
+
     isStringOnlyAlphas: function(check){
         Kojak.Core.assert(Kojak.Core.isString(check, 'only use with strings'));
         return check.match(Kojak.Core._REGEX_ALPHA);
+    },
+
+    isStringArray: function(check){
+        var isStringArray = true;
+
+        if(Kojak.Core.isArray(check)){
+            check.forEach(function(c){
+                if(!Kojak.Core.isString(c)){
+                    isStringArray = false;
+                }
+            });
+        }
+        else {
+            isStringArray = false;
+        }
+
+        return isStringArray;
     },
 
     assert: function(test, msg){
