@@ -28,37 +28,280 @@
     <div id="content-wrapper">
       <div class="inner clearfix">
         <section id="main-content">
-          <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+          <h2>
+<a name="kojak-a-simple-javascript-profiler" class="anchor" href="#kojak-a-simple-javascript-profiler"><span class="octicon octicon-link"></span></a>Kojak: A simple JavaScript profiler</h2>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<h4>
+<a name="what-is-kojak" class="anchor" href="#what-is-kojak"><span class="octicon octicon-link"></span></a>What is Kojak?</h4>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+<p>Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks which of your
+functions are called, how often they are called, how much time they are taking, how the functions were called.  It can also track your ajax calls
+and help figure out how fast they are. (<a href="http://en.wikipedia.org/wiki/Kojak">Kojak</a> was a tv show detective)</p>
+
+<h4>
+<a name="why-kojak" class="anchor" href="#why-kojak"><span class="octicon octicon-link"></span></a>Why Kojak?</h4>
+
+<p>I've found that Chrome's developer tools or Firebug didn't usually help me figure out where my client side code was slow.
+I wanted a tool that would weed out the noise of external / core JavaScript libraries.  Kojak allows you to define what
+code you care about and it will ignore everything else.  It's really helped me get my JavaScript code faster. Hopefully
+it can help you and your project.</p>
+
+<h4>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h4>
+
+<p>The core or Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is
+light weight and easy to use. You do need a modern browser such as Chrome, Firefox or IE 8.0+.
+If you want to profile ajax network requests you will need to include jQuery.</p>
+
+<p><br></p>
+
+<h4>
+<a name="how-to-use-it-the-short-version" class="anchor" href="#how-to-use-it-the-short-version"><span class="octicon octicon-link"></span></a>How to use it (the short version)</h4>
+
+<p>To use Kojak copy/download the Kojak.min.js file.  Include it in the browser code you want to profile.  You can include it with
+a normal script tag or you can also just copy and paste the Kojak.min.js file directly into a running browser console.
+You can actually profile code in any web site as long as you know what the code root namespaces are (discussed later).</p>
+
+<p>Kojak expects that your code is accessible via the window object.  A typical application might be assembled like this:</p>
+
+<pre><code>var myProject = {models: {}, views: {}, controllers: {}, utils: {}};
+myProject.models.ModelA = function(){};
+myProject.views.ViewA = function(){};
+myProject.utils.sharedUsefulFunction = function(){};
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<p>The classes/functions live somewhere under the window object.  In the example above, the code lives under window.myProject.
+(Kojak might be extended in the future to support code not directly accessible under window.)</p>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
+<p>To quickly get started with Kojak you could run the following commands in the browser's console:</p>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<pre><code>  // replace with your own root package names
+  kConfig.setIncludedPakages(['myProject']);
 
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
+  // this will root recursively through all your code, starting with the included packages and wrap every
+  // single function it finds to keep track of all of the function's runtime information
+  kInst.instrument();
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+  // See which functions have been instrumented in your application
+  kRep.instrumentedCode();
 
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
+  // Now you should do something with your application that does not include a full page refresh
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+  // Now see which are your slowest functions.  This only includes the instrumented functions.
+  kRep.funcPerf();
+</code></pre>
 
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
+<p>Kojak has a lot of other features that I'll explain later, but first I need to explain how Kojak makes sense of JavaScript.</p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p><br></p>
+
+<h4>
+<a name="supported-code-formats" class="anchor" href="#supported-code-formats"><span class="octicon octicon-link"></span></a>Supported code formats</h4>
+
+<p><i>If this section is confusing I would recommend reading <a href="http://www.amazon.com/Secrets-JavaScript-Ninja-John-Resig/dp/193398869X/ref=sr_1_1?s=books&amp;ie=UTF8&amp;qid=1382038307&amp;sr=1-1&amp;keywords=secrets+of+the+javascript+ninja">chapters 1-6</a>.</i></p>
+
+<p>Kojak recognizes 3 types of data structures in your code</p>
+
+<ul>
+<li><code>Pakage</code></li>
+<li><code>Clazz</code></li>
+<li><code>function</code></li>
+</ul><p>A <code>Pakage</code> is anything that might contain your code. A <code>Pakage</code> might be a Plain Old JavaScript Object (POJO) that looks like {}.
+A <code>Pakage</code> might also be a <code>Clazz</code> that contains other <code>Clazzes</code> or <code>Pakages</code>.
+In the example below, myProject, myProject.models, myProject.models.ModelA and myProject.models.ModelA.NestedModelB are all considered Pakages:</p>
+
+<pre><code>var myProject = {models: {}, views: {}};
+myProject.models.ModelA = function(){};
+myProject.models.ModelA.NestedModelB = function(){};
+</code></pre>
+
+<p>A <code>Clazz</code> is a function that is expected to be used with the <code>new</code> operator.  <code>Clazzes</code> are expected to be named starting
+with an upper case character. In the previous example ModelA and NestedModelB are both <code>Classes</code>.</p>
+
+<p>A <code>function</code> is just a normal JavaScript function that Kojak does not think is a <code>Clazz</code>.  Kojak looks for functions
+in <code>Pakage</code>, <code>Clazz</code> or under the <code>Clazz</code>.<code>prototype</code>.</p>
+
+<p>For example, Kojak will profile the functions 'packageFunction<code>,</code>classLevelFunction<code>and the</code>prototypeLevelFunction`:</p>
+
+<pre><code>myProject.packageFunction = function(){};
+myProject.models.ModelA = function(){};
+myProject.models.ModelA.classLevelFunction(){};
+myProject.models.ModelA.prototype.prototypeLevelFunction(){};
+</code></pre>
+
+<p>It's important for Kojak to understand when a function will be invoked with the <code>new</code> operator and to avoid wrapping
+those type of functions directly.  If Kojak finds <b>any</b> reference to a function that starts with an upper case it will
+assume the function is a <code>Clazz</code>.</p>
+
+<p>The example below shows this:</p>
+
+<pre><code>myProject.models.ModelA = function(){};
+myProject.someCodePackage = {
+  refToModelA: myProject.models.ModelA
+};
+</code></pre>
+
+<p>In the example above, ModelA is also referenced with the name refToModelA.  Kojak understands that ModelA and refToModelA both
+reference the same function and that one of those references looks like a Clazz.  In that situation, Kojak will assume
+all references should behave as a Clazz.  If Kojak accidentally wraps a function and the function is invoked with the
+<code>new</code> operator Kojak will throw a runtime exception with a message explaining which function was instrumented incorrectly
+as a function instead of a Clazz.</p>
+
+<p><br></p>
+
+<h4>
+<a name="how-to-use-it-the-long-version" class="anchor" href="#how-to-use-it-the-long-version"><span class="octicon octicon-link"></span></a>How to use it (the long version)</h4>
+
+<p>Kojak needs to be told what code it is supposed to profile.  You tell Kojak via the command:
+<code>kConfig.setIncludedPakages(['packageA', 'packageB'])</code></p>
+
+<p>Kojak will use these package names as entry points to find all of the code that you probably care about.</p>
+
+<p>You can also tell Kojak to exclude functions or packages with this command:
+<code>kConfig.setExcludedPaths(['packageA.SomeClass.funcA', 'packageA.SomeClass.funcB']);</code></p>
+
+<p>Kojak will then ignore funcA and funcB.  The excluded paths can be fully qualified function paths or namespaces etc.</p>
+
+<p>There are several other options in <code>kConfig</code> that are discussed in a later section.  All options set with <code>kConfig</code> are persisted
+automatically in the browser's local storage.  So, the next time you refresh a page etc. your Kojak options are saved.</p>
+
+<p><br>
+After you've told Kojak what it should are about and what to exclude you need to run this command:
+<code>kInst.instrument();</code></p>
+
+<p>The <code>instrument</code> function will locate every single <code>Pakage</code>, <code>Clazz</code> and <code>function</code> that can be found recursively through
+what you specified in the kConfig. Kojak will inject a <code>_kPath</code> string in each <code>Pakage</code> and <code>Clazz</code> that is the fully qualified
+path to the <code>Package</code> or <code>Clazz</code> so that they can be self aware of where they live.</p>
+
+<p>The <code>instrument</code> function replace each <code>function</code> it finds with a wrapper function.  The wrapper function helps Kojak to
+track everything that happens with that function. The new wrapper function contains a <code>_kFProfile</code> property.  The <code>_kProfile</code>
+property keeps track of all of the information of what is a happening with the function.</p>
+
+<p><br>
+After you have told Kojak to instrument your code you can now invoke your code.  Typically you will click on something etc.
+After some of your code has ran you want to see why it was so slow.  To determine which functions are too slow run the command:
+<code>kRep.funcPerf();</code></p>
+
+<p>By default, this function will return the 20 slowest functions that have been profiled. For example:</p>
+
+<pre><code>Top 20 functions displayed sorted by IsolatedTime'
+--KPath--                                                                    --IsolatedTime--  --WholeTime--  --CallCount--
+MyProject.views.schedule.ResourceListView.prototype._positionAppointments     392               426            77
+MyProject.views.schedule.ResourceListView.prototype._createGridLines          351               367            35
+MyProject.domain.BaseModel.prototype.get                                       99                230            14,679
+MyProject.domain.BaseModel.prototype._getResolvedAttributeTypes                98                98             14,926
+MyProject.views.schedule.ScheduleView.prototype._sizeWeekViewResourceColumns   78                78             28
+...
+</code></pre>
+
+<p>The funcPerf() will report 3 different fields for each function</p>
+
+<ul>
+<li>IsolatedTime</li>
+<li>WholeTime</li>
+<li>CallCount</li>
+</ul><p>IsolatedTime is how much cumulative time was spent inside the function itself.  Whole time includes other functions.</p>
+
+<p>For example, funcA takes 1 second and funcB takes 2 seconds.  If we modify funcA to internally call funcB the results would
+look like this:</p>
+
+<pre><code>--KPath--  --IsolatedTime--  --WholeTime--  --CallCount--
+funcA         1,000              3,000         1
+funcB         2,000              2,000         1
+</code></pre>
+
+<p>funcA's IsolatedTime would be 1,000 milliseconds but it's whole time would be 3,000 milliseconds.  Most of the time, you
+ will probably care more about IsolatedTime than WholeTime.</p>
+
+<p>The funcPerf() function can take the following options:</p>
+
+<ul>
+<li>sortBy - kRep.funcPerf({sortBy: 'WholeTime'});</li>
+<li>max - kRep.funcPerf({max: 30}); // I want 30 results instead of the default of 20</li>
+<li>filter - kRep.funcPerf({filter: ['BaseModel', 'BaseView']}); // I only want results that contain 'BaseModel' or 'BaseView' in their path</li>
+</ul><p><br>
+After seeing what your slowest functions are you might want to know how they are being invoked.  This is particularly
+important for when a function's CallCount is unacceptably high.</p>
+
+<p>To figure out who is calling a function run this command:</p>
+
+<pre><code>kRep.callPaths(MyProject.someFunc);
+
+// Example results
+--Call Count--  --Invocation Path--
+1,380           MyProject.foo &gt; MyProject.models.ModelA.prototype.bar &gt; MyProject.something
+...
+</code></pre>
+
+<p>The invocation paths will only include functions that Kojak has instrumented.  These call paths can help you track down
+why a function is called too much.</p>
+
+<p><br></p>
+
+<h4>
+<a name="tracking-performance-in-between-actions" class="anchor" href="#tracking-performance-in-between-actions"><span class="octicon octicon-link"></span></a>Tracking performance in between actions</h4>
+
+<p>Sometimes it's helpful to take performance checkpoints between actions and not include any previous results.  Sometimes it
+can take a long time to set up a test and you don't want to have to repeat steps.  You can only run kInst.instrument() one time.</p>
+
+<p>To do this use this command:
+<code>kInst.takeCheckpoint();</code></p>
+
+<p>Then perform your action.</p>
+
+<p>Then run this command:
+<code>kRep.funcPerfAfterCheckpoint();</code></p>
+
+<p>The funcPerfAfterCheckpoint() is identical to funcPerf() and can accept the same parameters.  The difference is that
+  the function results (IsolatedTime etc.) are only since the last time takeCheckpoint() was called.</p>
+
+<p>Sometimes it's particularly interesting to watch the CallCount's for functions when running the identical actions.  Most of
+the time the CallCount numbers should be identical.  If they are not, you probably have some type of memory leak.</p>
+
+<p><br></p>
+
+<h4>
+<a name="tracking-network-requests" class="anchor" href="#tracking-network-requests"><span class="octicon octicon-link"></span></a>Tracking Network Requests</h4>
+
+<p>Kojak can also track all of your network ajax requests.  To use the NetWatcher you must use jQuery.  To enable run this command:
+<code>kConfig.setEnableNetWatcher(true);</code></p>
+
+<p>The Kojak NetWatcher will then watch any ajax requests made.  To see a consolidated view the results use this command:</p>
+
+<pre><code>kRep.netCalls();
+// Example output
+--urlBase--            --urlParameters--    --When Called--  --Call Time--  --Size (bytes)--  --Obj Count--
+/kpi/SOME_KPI [GET]      &lt;none&gt;                01:04:22 PM      3,442          386               8
+...
+</code></pre>
+
+<p>The results are consolidated by the urlBase.  The results are sorted by the Call Time.</p>
+
+<p><br></p>
+
+<h4>
+<a name="full-api-and-options" class="anchor" href="#full-api-and-options"><span class="octicon octicon-link"></span></a>Full API and Options</h4>
+
+<p>todo, ugh.</p>
+
+<p><br></p>
+
+<h4>
+<a name="how-to-compile-it-locally" class="anchor" href="#how-to-compile-it-locally"><span class="octicon octicon-link"></span></a>How to compile it locally</h4>
+
+<p>Normally you won't need to do this unless you are forking the code.  If you do want to fork the code.</p>
+
+<ul>
+<li>Install NodeJS</li>
+<li>Install GIT</li>
+<li>Fork the code (git clone <a href="https://github.com/theironcook/Kojak/">https://github.com/theironcook/Kojak/</a>)</li>
+<li>Navigate to the directory you forked the code and type: npm install</li>
+</ul><p>This will install grunt, phantom, jasmine, uglify etc. in the local node_modules directory.</p>
+
+<p>To build a prod version type: grunt buildProd
+To build a dev version type: grunt buildDev
+You can also type: grunt watch
+This will run grunt buildDev whenever a source file or a unit test changes.</p>
         </section>
 
         <aside id="sidebar">
