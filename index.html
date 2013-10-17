@@ -29,7 +29,8 @@
       <div class="inner clearfix">
         <section id="main-content">
           <h2>
-<a name="kojak-a-simple-javascript-profiler" class="anchor" href="#kojak-a-simple-javascript-profiler"><span class="octicon octicon-link"></span></a>Kojak: A simple JavaScript profiler</h2>
+<a name="kojak-a-simple-javascript-profiler-" class="anchor" href="#kojak-a-simple-javascript-profiler-"><span class="octicon octicon-link"></span></a>Kojak: A simple JavaScript profiler <a href="http://travis-ci.org/theironcook/Kojak"><img src="https://api.travis-ci.org/theironcook/Kojak.png" alt="Build Status"></a>
+</h2>
 
 <h4>
 <a name="what-is-kojak" class="anchor" href="#what-is-kojak"><span class="octicon octicon-link"></span></a>What is Kojak?</h4>
@@ -177,6 +178,12 @@ path to the <code>Package</code> or <code>Clazz</code> so that they can be self 
 track everything that happens with that function. The new wrapper function contains a <code>_kFProfile</code> property.  The <code>_kProfile</code>
 property keeps track of all of the information of what is a happening with the function.</p>
 
+<p>You can check which functions have been instrumented with this command:
+<code>kRep.instrumentedCode();</code></p>
+
+<p>If you want more details you can run this command:
+`<code>kRep.instrumentedCode({verbose: true});</code></p>
+
 <p><br>
 After you have told Kojak to instrument your code you can now invoke your code.  Typically you will click on something etc.
 After some of your code has ran you want to see why it was so slow.  To determine which functions are too slow run the command:
@@ -302,6 +309,26 @@ the time the CallCount numbers should be identical.  If they are not, you probab
 To build a dev version type: grunt buildDev
 You can also type: grunt watch
 This will run grunt buildDev whenever a source file or a unit test changes.</p>
+
+<p><br></p>
+
+<h4>
+<a name="change-log" class="anchor" href="#change-log"><span class="octicon octicon-link"></span></a>Change log</h4>
+
+<p>test</p>
+
+<p><br></p>
+
+<h4>
+<a name="legal-info-mit-license" class="anchor" href="#legal-info-mit-license"><span class="octicon octicon-link"></span></a>Legal Info (MIT License)</h4>
+
+<p>Copyright (c) 2013 Bart Wood</p>
+
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+
+<p>THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
         </section>
 
         <aside id="sidebar">
