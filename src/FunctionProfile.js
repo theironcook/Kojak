@@ -2,6 +2,12 @@
 Kojak.FunctionProfile = function (container, functionName, origFunction) {
     var _this = this;
 
+    Kojak.Core.assert( container &&
+                       (container._kPath || container._kPath === '') &&
+                       Kojak.Core.isString(functionName) &&
+                       Kojak.Core.isFunction(origFunction),
+                       'FunctionProfile constructor args are not correct');
+
     this._container = container;
     this._functionName = functionName;
     this._origFunction = origFunction;
@@ -12,8 +18,20 @@ Kojak.FunctionProfile = function (container, functionName, origFunction) {
     this._callPaths = {};
     this._wholeTime = 0;
     this._isolatedTime = 0;
+    this.takeCheckpoint();
 
     this._wrappedFunction = function(){
+        var error;
+
+        // Check if this function was invoked with the 'new' operator
+        // if it was, we accidentally wrapped a clazzes constructor which will probably cause the host app to crash
+        if(this instanceof _this._wrappedFunction){
+            error = 'Kojak Error! It looks like Kojak wrapped a function that is used as a constructor: ' + _this._kPath +
+                    '\n\tTo fix this you can either rename the reference to the function to start with upper case' +
+                    '\n\tor you could ignore it by passing calling Kojak.Config.addExcludedPath(\'' + _this._kPath + '\')';
+            throw error;
+        }
+
         Kojak.instrumentor.recordStartFunction(_this);
         var returnValue = origFunction.apply(this, arguments);
         Kojak.instrumentor.recordStopFunction(_this);

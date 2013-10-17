@@ -1,5 +1,6 @@
 
 Kojak.Formatter = {
+
     makeTabs: function(num){
         var tabs = '';
         for (var level = 0; level < num; level++) {
@@ -45,7 +46,7 @@ Kojak.Formatter = {
     formatReport: function(report){
         var rowCount, row, rowString, fieldCount, fieldVal, fieldWidths = [];
 
-        Kojak.Core.assert(Kojak.Core.isArray(report), 'Reports are simply 2d arrays');
+        Kojak.Core.assert(Kojak.Core.isArray(report), 'Reports should be 2d string arrays');
 
         // First calculate the field widths, format numbers
         for(rowCount = 0; rowCount < report.length; rowCount++){

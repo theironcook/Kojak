@@ -37,7 +37,7 @@ Kojak.Core.extend(Kojak.NetWatcher.prototype, {
         }
     },
 
-    // You might need to manually call this from a web worker handler if you want to track web worker network calls
+    // You will need to call this from a web worker handler if you want to track web worker network calls
     trackNetResponse: function(httpMethod, url, callTime, responseText){
         var urlParts;
 

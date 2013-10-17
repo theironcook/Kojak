@@ -30,26 +30,26 @@ Kojak.Core = {
         return obj;
     },
 
-    // Get a context via a name delimited by .s
+    // Get a context via a name delimited by periods
     getContext: function(contextPath){
         var contextPathItems, count, currentContextPath, context;
 
-        if(Kojak.Core.isString(contextPath)){
-            context = window;
-            contextPathItems = contextPath.split('.');
+        Kojak.Core.assert(Kojak.Core.isString(contextPath), 'getContext can only be called with a string');
 
-            for(count = 0; count < contextPathItems.length; count++){
-                currentContextPath = contextPathItems[count];
+        context = window;
+        contextPathItems = contextPath.split('.');
 
-                if(typeof(context[currentContextPath]) === 'undefined'){
-                    return undefined;
-                }
+        for(count = 0; count < contextPathItems.length; count++){
+            currentContextPath = contextPathItems[count];
 
-                context = context[currentContextPath];
+            if(typeof(context[currentContextPath]) === 'undefined'){
+                return undefined;
             }
 
-            return context;
+            context = context[currentContextPath];
         }
+
+        return context;
     },
 
     isObject: function(obj) {

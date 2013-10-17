@@ -7,7 +7,7 @@ Kojak.NetProfile = function(urlBase){
 
 Kojak.Core.extend(Kojak.NetProfile.prototype, {
     addCall: function(urlParams, callTime, responseText){
-        this._calls.push(new Kojak.NetProfileCall(this, urlParams, callTime, responseText));
+        this._calls.push(new Kojak.NetProfileCall(urlParams, callTime, responseText));
     },
 
     getTotalCallTime: function(){

@@ -1,8 +1,8 @@
 describe('Config suite', function() {
 
-
     beforeEach(function(){
-        localStorage.removeItem('kojak');
+        localStorage.removeItem(Kojak.Config._LOCAL_STORAGE_KEY);
+        localStorage.removeItem(Kojak.Config._LOCAL_STORAGE_BACKUP_KEY);
 
         spyOn(Kojak.Config, '_createDefaults').andCallThrough();
         spyOn(Kojak.Config, '_save').andCallThrough();
@@ -14,7 +14,7 @@ describe('Config suite', function() {
         expect(Kojak.Config.AUTO_START_NONE).toBeDefined();
         expect(Kojak.Config.AUTO_START_IMMEDIATE).toBeDefined();
         expect(Kojak.Config.AUTO_ON_JQUERY_LOAD).toBeDefined();
-        expect(Kojak.Config.AUTO_DELAYED).toBeDefined();
+        expect(Kojak.Config.AUTO_START_DELAYED).toBeDefined();
     });
 
     it('Config.load with nothing in storage', function(){
@@ -38,10 +38,45 @@ describe('Config suite', function() {
     });
 
     it('Config.setIncludePackages with bogus string parameter', function(){
-        var callWithString = function(){
-            Kojak.Config.setIncludePackages('a');
-        };
-
-        expect(callWithString).toThrow();
+        expect(function(){Kojak.Config.setIncludedPakages('a');}).toThrow();
     });
+
+    it('Config.saveBackup with nothing in localStorage', function(){
+        expect(Kojak.Config.saveBackup).toThrow();
+    });
+
+    it('Config.saveBackup with something in localStorage', function(){
+        Kojak.Config.load();
+        expect(Kojak.Config.saveBackup).not.toThrow();
+    });
+
+    it('Config.restore with nothing in localStorage', function(){
+        expect(Kojak.Config.restoreBackup).toThrow();
+    });
+
+    it('Config.restoreBackup with something in localStorage', function(){
+        Kojak.Config.load();
+        Kojak.Config.saveBackup();
+        expect(Kojak.Config.saveBackup).not.toThrow();
+    });
+
+    it('Config.setAutoStartInstrumentation with bad input', function(){
+        expect(function(){Kojak.Config.setAutoStartInstrumentation()}).toThrow();
+        expect(function(){Kojak.Config.setAutoStartInstrumentation('string')}).toThrow();
+        expect(function(){Kojak.Config.setAutoStartInstrumentation({})}).toThrow();
+    });
+
+    it('Config.setAutoStartInstrumentation with good input', function(){
+        Kojak.instrumentor = {hasInstrumented: function(){return true;}};
+        expect(function(){Kojak.Config.setAutoStartInstrumentation(Kojak.Config.AUTO_START_NONE)}).not.toThrow();
+        expect(function(){Kojak.Config.setAutoStartInstrumentation(Kojak.Config.AUTO_START_IMMEDIATE)}).not.toThrow();
+
+        expect(Kojak.Config.getAutoStartDelay()).toBeUndefined();
+        expect(Kojak.Config.getAutoStartDelay).toBeDefined();
+        expect(function(){Kojak.Config.setAutoStartInstrumentation(Kojak.Config.AUTO_START_DELAYED)}).not.toThrow();
+        expect(Kojak.Config.getAutoStartDelay()).toBeDefined();
+
+        expect(function(){Kojak.Config.setAutoStartInstrumentation(Kojak.Config.AUTO_ON_JQUERY_LOAD)}).not.toThrow();
+    });
+
 });

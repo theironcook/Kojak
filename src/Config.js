@@ -5,7 +5,10 @@ Kojak.Config = {
     AUTO_START_NONE: 'none',
     AUTO_START_IMMEDIATE: 'immediate',
     AUTO_ON_JQUERY_LOAD: 'on_jquery_load',
-    AUTO_DELAYED: 'delayed',
+    AUTO_START_DELAYED: 'delayed',
+
+    _LOCAL_STORAGE_KEY: 'kojak',
+    _LOCAL_STORAGE_BACKUP_KEY: 'kojak_backup',
 
     load: function () {
         if (localStorage.getItem('kojak')) {
@@ -18,13 +21,13 @@ Kojak.Config = {
     },
 
     saveBackup: function(){
-        Kojak.Core.assert(localStorage.getItem('kojak'), 'kojak not defined yet in local storage');
-        localStorage.setItem('kojak_backup', localStorage.getItem('kojak'));
+        Kojak.Core.assert(localStorage.getItem(Kojak.Config._LOCAL_STORAGE_KEY), 'kojak not defined yet in local storage');
+        localStorage.setItem('kojak_backup', localStorage.getItem(Kojak.Config._LOCAL_STORAGE_KEY));
     },
 
     restoreBackup: function(){
-        Kojak.Core.assert(localStorage.getItem('kojak_backup'), 'no backup existed in local storage');
-        localStorage.setItem('kojak', localStorage.getItem('kojak_backup'));
+        Kojak.Core.assert(localStorage.getItem(Kojak.Config._LOCAL_STORAGE_BACKUP_KEY), 'no backup existed in local storage');
+        localStorage.setItem(Kojak.Config._LOCAL_STORAGE_KEY, localStorage.getItem(Kojak.Config._LOCAL_STORAGE_BACKUP_KEY));
         this._configValues = this._loadLocalStorage();
     },
 
@@ -33,7 +36,8 @@ Kojak.Config = {
     },
 
     setAutoStartInstrumentation: function (val) {
-        Kojak.Core.assert([Kojak.Config.AUTO_START_NONE, Kojak.Config.AUTO_START_IMMEDIATE, Kojak.Config.AUTO_ON_JQUERY_LOAD, Kojak.Config.AUTO_DELAYED].indexOf(val) !== -1, 'Invalid auto start option \'' + val + '\'.');
+        Kojak.Core.assert( [Kojak.Config.AUTO_START_NONE, Kojak.Config.AUTO_START_IMMEDIATE, Kojak.Config.AUTO_ON_JQUERY_LOAD, Kojak.Config.AUTO_START_DELAYED].indexOf(val) !== -1,
+                           'Invalid auto start option \'' + val + '\'.');
 
         this._configValues.autoStartInstrumentation = val;
         this._save();
@@ -43,7 +47,7 @@ Kojak.Config = {
             console.log('reload your browser to notice the change.');
         }
 
-        if(val === Kojak.Config.AUTO_DELAYED && !this._isAutoStartDelayValid(this.getAutoStartDelay())){
+        if(val === Kojak.Config.AUTO_START_DELAYED && !this._isAutoStartDelayValid(this.getAutoStartDelay())){
             console.log('setting a default auto start delay');
             this.setAutoStartDelay(4000);
         }
@@ -64,36 +68,36 @@ Kojak.Config = {
     },
 
     // *****************************************************************************************************************
-    // Included packages
-    addIncludedPackage: function (pkg) {
-        Kojak.Core.assert(this._configValues.includedPackages.indexOf(pkg) === -1, 'Package is already included');
+    // Included pakages
+    addIncludedPakage: function (pkg) {
+        Kojak.Core.assert(this._configValues.includedPakages.indexOf(pkg) === -1, 'Pakage is already included');
 
-        this._configValues.includedPackages.push(pkg);
+        this._configValues.includedPakages.push(pkg);
         this._save();
 
-        console.log('includedPackages updated');
+        console.log('includedPakages updated');
         if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change');
         }
     },
 
-    setIncludedPackages: function (pks) {
-        Kojak.Core.assert(Kojak.Core.isArray(pks), 'Only pass an array of strings for the included package names');
+    setIncludedPakages: function (pks) {
+        Kojak.Core.assert(Kojak.Core.isArray(pks), 'Only pass an array of strings for the included pakage names');
 
-        this._configValues.includedPackages = pks;
+        this._configValues.includedPakages = pks;
         this._save();
 
-        console.log('includedPackages updated');
+        console.log('includedPakages updated');
         if(Kojak.instrumentor.hasInstrumented()){
             console.log('reload your browser to notice the change.');
         }
     },
 
-    removeIncludedPackage: function (pkg) {
-        var pathIndex = this._configValues.includedPackages.indexOf(pkg);
-        Kojak.Core.assert(pathIndex !== -1, 'Package is not currently included.');
+    removeIncludedPakage: function (pkg) {
+        var pathIndex = this._configValues.includedPakages.indexOf(pkg);
+        Kojak.Core.assert(pathIndex !== -1, 'Pakage is not currently included.');
 
-        this._configValues.includedPackages.splice(pathIndex, 1);
+        this._configValues.includedPakages.splice(pathIndex, 1);
         this._save();
 
         console.log('included path removed');
@@ -102,10 +106,10 @@ Kojak.Config = {
         }
     },
 
-    getIncludedPackages: function(){
-        return this._configValues.includedPackages;
+    getIncludedPakages: function(){
+        return this._configValues.includedPakages;
     },
-    // Included packages
+    // Included pakages
     // *****************************************************************************************************************
 
     // *****************************************************************************************************************
@@ -195,7 +199,7 @@ Kojak.Config = {
 
         console.log('set autoStartDelay to ' + delay + ' milliseconds');
 
-        if(this.getAutoStart() !== Kojak.Config.AUTO_DELAYED){
+        if(this.getAutoStartInstrumentation() !== Kojak.Config.AUTO_START_DELAYED){
             console.log('warning, the auto start is not current auto delayed.');
         }
 
@@ -222,15 +226,15 @@ Kojak.Config = {
     },
 
     _save: function () {
-        localStorage.setItem('kojak', JSON.stringify(this._configValues));
+        localStorage.setItem(Kojak.Config._LOCAL_STORAGE_KEY, JSON.stringify(this._configValues));
     },
 
     _loadLocalStorage: function () {
-        var storageString = localStorage.getItem('kojak');
+        var storageString = localStorage.getItem(Kojak.Config._LOCAL_STORAGE_KEY);
         var configValues = JSON.parse(storageString);
 
         // a simple check to see if the storage item resembles a kojak config item
-        Kojak.Core.assert(configValues.version, 'There is no version in the item \'kojak\' in localStorage.  It looks wrong.');
+        Kojak.Core.assert(configValues.version, 'There is no version in the item \'' + Kojak.Config._LOCAL_STORAGE_KEY + '\' in localStorage.  It looks wrong.');
 
         this._upgradeConfig(configValues);
         return configValues;
@@ -259,7 +263,7 @@ Kojak.Config = {
         return {
             version: Kojak.Config.CURRENT_VERSION,
             realTimeFunctionLogging: false,
-            includedPackages: [],
+            includedPakages: [],
             excludedPaths: [],
             autoStartInstrumentation: Kojak.Config.AUTO_START_NONE,
             enableNetWatcher: false

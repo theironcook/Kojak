@@ -60,7 +60,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
             child,
             childKojakType;
 
-        curPakageNames = Kojak.Config.getIncludedPackages().slice(0);
+        curPakageNames = Kojak.Config.getIncludedPakages().slice(0);
 
         while (curPakageNames.length > 0) {
             pakagePath = curPakageNames.pop();

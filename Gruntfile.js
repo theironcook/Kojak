@@ -36,6 +36,12 @@ module.exports = function(grunt){
                 options: {
                     specs: 'spec/ConfigSpec.js'
                 }
+            },
+            functionProfile: {
+                src: ['src/Core.js', 'src/FunctionProfile.js'],
+                options: {
+                    specs: 'spec/FunctionProfileSpec.js'
+                }
             }
         },
 

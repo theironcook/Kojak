@@ -1,7 +1,6 @@
 
-Kojak.NetProfileCall = function(netProfile, urlParams, callTime, responseText){
-    Kojak.Core.assert(netProfile, (urlParams || urlParams === '') && (callTime || callTime === 0), 'Parameters to NetProfile not set correctly');
-    this._netProfile = netProfile;
+Kojak.NetProfileCall = function(urlParams, callTime, responseText){
+    Kojak.Core.assert((urlParams || urlParams === '') && (callTime || callTime === 0), 'Parameters to NetProfile not set correctly');
     this._date = new Date();
     this._urlParams = urlParams;
     this._callTime = callTime;

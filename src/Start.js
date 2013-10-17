@@ -26,7 +26,7 @@ switch(Kojak.Config.getAutoStartInstrumentation()){
             console.log('Kojak autoStart set to Kojak.Config.AUTO_ON_JQUERY_LOAD but jQuery was not found.\nDid you forget to include jQuery?');
         }
         break;
-    case Kojak.Config.AUTO_DELAYED:
+    case Kojak.Config.AUTO_START_DELAYED:
         setTimeout(function(){
             console.log('Running Kojak.instrumentor.instrument() after the auto delay of ' + Kojak.Formatter.number(Kojak.Config.getAutoStartDelay()) + ' milliseconds.');
             Kojak.instrumentor.instrument();

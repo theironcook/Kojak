@@ -26,9 +26,9 @@ describe('Core suite', function() {
     });
 
     it('Core.getContext with bad input', function() {
-        expect(Kojak.Core.getContext()).toBeUndefined();
-        expect(Kojak.Core.getContext(null)).toBeUndefined();
-        expect(Kojak.Core.getContext({})).toBeUndefined();
+        expect(Kojak.Core.getContext).toThrow();
+        expect(function(){Kojak.Core.getContext(null)}).toThrow();
+        expect(function(){Kojak.Core.getContext({})}).toThrow();
     });
 
     it('Core.getContext with missing context', function() {

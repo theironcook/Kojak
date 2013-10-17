@@ -141,6 +141,13 @@ Kojak.Report = {
             return;
         }
 
+        if(!opts){
+            opts = {sortBy: 'IsolatedTime_Checkpoint'};
+        }
+        else if(!opts.sortBy){
+            opts.sortBy = 'IsolatedTime_Checkpoint';
+        }
+
         this._functionPerfProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
     },
 
