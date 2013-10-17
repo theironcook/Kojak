@@ -232,10 +232,99 @@ kRep.netCalls();
 
 The results are consolidated by the urlBase.  The results are sorted by the Call Time.
 
+This does not track network requests made in a Web Worker right now.
+
 
 <br>
 ####Full API and Options
-todo, ugh.
+
+kConfig (configuration)<hr>
+````
+// Sets whether the net watcher is enabled.  If you set it to true you need to have jQuery loaded.
+// If net watcher is enabled it starts running as soon as the Kojak libary is loaded.
+kConfig.setEnableNetWatcher(enabled);
+
+// Sets if/how Kojak is supposed to automatically start code instumentation
+// Possible vals include:
+//   Kojak.Config.AUTO_START_NONE
+//   Kojak.Config.AUTO_START_IMMEDIATE - will not work for more complex code
+//   Kojak.Config.AUTO_ON_JQUERY_LOAD - obviously jQuery needs to be loaded
+//   Kojak.Config.AUTO_START_DELAYED - use in conjunction with kConfig.setAutoStartDelay(millis);
+kConfig.setAutoStartInstrumentation(val);
+
+// If using Kojak.Config.AUTO_START_DELAYED, this is how many milliseconds to wait before calling kInst.instrument();
+kConfig.setAutoStartDelay(millis);
+
+// If you want to log when EVERY single function that has been profiled is invoked call this with true
+// Be careful with this - you will see many many messages
+kConfig.setRealTimeFunctionLogging(val);
+
+// Overwrites previously included pakages
+// pakages is an array of strings
+// Kojak will use these pakages as entry points to recursively find all code to instrument
+kConfig.setIncludedPakages(pakages);
+
+// Adds pakage to the list of included pakages
+// pakage is a string
+kConfig.addIncludedPakage(pakage);
+
+// Removes pakage from the list of included pakages
+// pakage is a string
+kConfig.removeIncludedPakage(pakage);
+
+// See the list of included pakages
+kConfig.getIncludedPakages();
+
+// Overwrites the previously excluded paths
+// paths is an array of strings
+// Kojak will skip any Pakage, Clazz or function that partially matches any of the paths
+kConfig.setExcludedPaths(paths);
+
+// Adds path to the list of excluded paths
+// path is a string
+kConfig.addIncludedPath(path);
+
+// Removes path from the list of excluded paths
+// path is a string
+kConfig.removeExcludedPath(path);
+
+// See the list of excluded paths
+kConfig.getExcludedPaths();
+````
+
+kInst (instrumentation)<hr>
+````
+// Call this once to instrument your code base.  Cannot be called more than once
+// Every specified (in kConfig) function will be replaced with a wrapper function.
+kInst.instrument();
+
+// Takes a checkpoint of the function execution metrics
+// After calling this run your code and the use kRep.funcPerfAfterCheckpoint()
+kInst.takeCheckpoint();
+````
+
+kRep (reporting)<hr>
+````
+// Check what code Kojak has instrumented
+// options is a JavaScript object that can have the following values
+//   verbose: true - will report not only Pakages and Clazzes but also function names and call counts
+//   filter: ['xxx', 'xxx'] - can be a string or an array of strings.  Only code matching a filter will be reported
+kRep.instrumentedCode(options);
+
+// Check the instrumented function performance
+// options is a JavaScript object that can have the following values
+//   sortBy - possible values include 'IsolatedTime', 'WholeTime', 'CallCount'
+//   max - how many rows do you want to return
+//   filter: ['xxx', 'xxx'] - can be a string or an array of strings.  Only code matching a filter will be reported
+kRep.funcPerf(options);
+
+// Identical to funcPerf but the function performance metrics are only after the last time kInst.takeCheckpoint() was called
+kRep.funcPerfAfterCheckpoint(options);
+
+// Only call this if you have enabled the net watcher
+// Returns all of the network calls sorted by call time.
+kRep.netCalls();
+````
 
 
 <br>
@@ -256,7 +345,7 @@ This will run grunt buildDev whenever a source file or a unit test changes.
 
 <br>
 ####Change log
-test
+* Changes won't be tracked tracked until version 0.2.0
 
 
 <br>
