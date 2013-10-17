@@ -6,4 +6,4 @@ before_script:
   - npm install
 
 script:
-  - ./travis_build.sh
+  grunt buildProd
