@@ -1,5 +1,7 @@
 ##Kojak: A simple JavaScript profiler
 
+[![Build Status](https://api.travis-ci.org/theironcook/Kojak.png)](http://travis-ci.org/theironcook/Kojak)
+
 ####What is Kojak?
 Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks which of your
 functions are called, how often they are called, how much time they are taking, how the functions were called.  It can also track your ajax calls
