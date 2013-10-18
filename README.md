@@ -6,14 +6,14 @@ functions are called, how often they are called, how much time they are taking, 
 and help figure out how fast they are. (<a href="http://en.wikipedia.org/wiki/Kojak">Kojak</a> was a tv show detective)
 
 ####Why Kojak?
-I've found that Chrome's developer tools or Firebug didn't usually help me figure out where my client side code was slow.
-I wanted a tool that would weed out the noise of external / core JavaScript libraries.  Kojak allows you to define what
-code you care about and it will ignore everything else.  It's really helped me get my JavaScript code faster. Hopefully
-it can help you and your project.
+I've found that Chrome's developer tools or Firebug have too much noise to make sense of my own code.  I needed a tool
+that would remove all of the noise of external or core JavaScript code.  Kojak helps you focus on the performance of
+your own code and eliminate the clutter.  It's helped me / my project to significantly speed up our JavaScript code. Hopefully
+it can help you and your projects.
 
 ####Dependencies
-The core or Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is
-light weight and easy to use. You do need a modern browser such as Chrome, Firefox or IE 8.0+.
+The core of Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is
+light weight and easy to use. You need a modern browser such as Chrome, Firefox or IE 8.0+.
 If you want to profile ajax network requests you will need to include jQuery.
 
 <br>
@@ -79,7 +79,7 @@ with an upper case character. In the previous example ModelA and NestedModelB ar
 A `function` is just a normal JavaScript function that Kojak does not think is a `Clazz`.  Kojak looks for functions
 in `Pakage`, `Clazz` or under the `Clazz`.`prototype`.
 
-For example, Kojak will profile the functions 'packageFunction`, `classLevelFunction` and the `prototypeLevelFunction`:
+For example, Kojak will profile the functions `packageFunction`, `classLevelFunction` and the `prototypeLevelFunction`:
 ````
 myProject.packageFunction = function(){};
 myProject.models.ModelA = function(){};
