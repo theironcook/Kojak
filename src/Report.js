@@ -328,6 +328,14 @@ Kojak.Report = {
         Kojak.Formatter.formatReport(report);
     },
 
+    randomKojakQuote: function(){
+        var kojakQuotes = ['Who loves ya, baby?',
+                           'Counselor, you tell your client to make his mouth behave, or he\'s a prime candidate for a get well card.',
+                           'Greeks don\'t threaten. They utter prophecies.',
+                           'Dumb got him killed. Dead is not guts. Dead is dumb.'];
+        return kojakQuotes[Math.floor(Math.random() * kojakQuotes.length)];
+    },
+
     // *****************************************************************************************************************
     // Helper functions
     // filter can be a string or an array of strings

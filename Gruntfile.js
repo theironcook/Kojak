@@ -28,26 +28,33 @@ module.exports = function(grunt){
             core: {
                 src: 'src/Core.js',
                 options: {
-                    specs: 'spec/CoreSpec.js'
+                    specs: 'spec/unit/CoreSpec.js'
                 }
             },
             config: {
                 src: ['src/Core.js', 'src/Config.js'],
                 options: {
-                    specs: 'spec/ConfigSpec.js'
+                    specs: 'spec/unit/ConfigSpec.js'
                 }
             },
             functionProfile: {
                 src: ['src/Core.js', 'src/FunctionProfile.js'],
                 options: {
-                    specs: 'spec/FunctionProfileSpec.js'
+                    specs: 'spec/unit/FunctionProfileSpec.js'
                 }
             }
+            // Phantom isn't working the same as a browser for some crazy reason, not sure why yet
+//            instrumentBasic: {
+//                src: ['src/Core.js', 'src/Config.js', 'src/FunctionProfile.js', 'src/Instrumentor.js'],
+//                options: {
+//                    specs: 'spec/functional/InstrumentBasicSpec.js'
+//                }
+//            }
         },
 
         watch: {
             scripts: {
-                files: ['<%= sourceFiles %>', 'spec/**Spec.js'],
+                files: ['<%= sourceFiles %>', 'spec/unit/**Spec.js', 'spec/functional/**Spec.js'],
                 tasks: ['buildDev'],
                 options: {
                     spawn: false

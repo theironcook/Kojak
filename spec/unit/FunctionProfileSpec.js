@@ -1,4 +1,27 @@
 describe('FunctionProfile suite', function() {
+
+    var blockThread = function (waitInMillis) {
+        var start = new Date() - 0;
+        var stop = start + waitInMillis;
+
+        while ((new Date() - 0) < stop) {
+        }
+    };
+
+    // Spoof the instrumentor. there is a close relationship between profiles and the instrumentor
+    // assumes tests will not call functions recursively
+    Kojak.instrumentor = {
+        recordStartFunction: function(fProfile){
+            fProfile.pushStartTime(new Date(), 'parent');
+        },
+        recordStopFunction: function(fProfile){
+            var startTime = fProfile.popStartTime();
+            var callTime = (new Date()) - startTime;
+            fProfile.addWholeTime(callTime);
+            fProfile.addIsolatedTime(callTime);
+        }
+    };
+
     it('FunctionProfile constructor with bad args', function() {
         expect(Kojak.FunctionProfile).toBeDefined();
 
@@ -57,20 +80,58 @@ describe('FunctionProfile suite', function() {
         expect(functionProfile.getCallCount_Checkpoint()).toBe(0);
     });
 
-    it('FunctionProfile call metrics after invocation', function() {
-        var functionProfile, container;
+    it('FunctionProfile metrics after invocation', function() {
+        var functionProfile, container, blockWait = 25;
 
-        Kojak.instrumentor = {
-            recordStartFunction: function(fProfile){},
-            recordStopFunction: function(fProfile){fProfile._callCount++;}
-        };
+        container = {_kPath: 'parent', func: function(){
+            blockThread(blockWait);
+        }};
 
-        container = {_kPath: 'parent', func: function(){}};
         functionProfile = new Kojak.FunctionProfile(container, 'foo', container.func);
         container['func'] = functionProfile.getWrappedFunction();
 
         container.func();
         expect(functionProfile.getCallCount()).toBe(1);
         expect(functionProfile.getProperty('CallCount')).toBe(1);
+        expect(Math.abs(functionProfile.getIsolatedTime() - blockWait) < 5).toBeTruthy();
+        expect(Math.abs(functionProfile.getWholeTime() - blockWait) < 5).toBeTruthy();
+
+        container.func();
+        expect(functionProfile.getCallCount()).toBe(2);
+        expect(functionProfile.getProperty('CallCount')).toBe(2);
+
+        expect(Math.abs(functionProfile.getIsolatedTime() - (2*blockWait)) < 5).toBeTruthy();
+        expect(Math.abs(functionProfile.getWholeTime() - (2*blockWait)) < 5).toBeTruthy();
+    });
+
+    it('FunctionProfile checkpoint metrics after invocation', function() {
+        var functionProfile, container, blockWait = 10, i;
+
+        container = {_kPath: 'parent', func: function(){
+            blockThread(blockWait);
+        }};
+
+        functionProfile = new Kojak.FunctionProfile(container, 'foo', container.func);
+        container['func'] = functionProfile.getWrappedFunction();
+
+        for(i = 0; i < 10; i++){
+            container.func();
+        }
+
+        functionProfile.takeCheckpoint();
+
+        expect(functionProfile.getCallCount_Checkpoint()).toBe(0);
+        expect(functionProfile.getProperty('CallCount_Checkpoint')).toBe(0);
+        expect(functionProfile.getIsolatedTime_Checkpoint()).toBe(0);
+        expect(functionProfile.getWholeTime_Checkpoint()).toBe(0);
+
+        for(i = 0; i < 10; i++){
+            container.func();
+        }
+
+        expect(functionProfile.getCallCount_Checkpoint()).toBe(10);
+        expect(functionProfile.getProperty('CallCount_Checkpoint')).toBe(10);
+        expect(Math.abs(functionProfile.getIsolatedTime_Checkpoint() - (10*blockWait)) < 5).toBeTruthy();
+        expect(Math.abs(functionProfile.getWholeTime_Checkpoint() - (10*blockWait)) < 5).toBeTruthy();
     });
 });
