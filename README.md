@@ -32,7 +32,8 @@ myProject.utils.sharedUsefulFunction = function(){};
 ````
 
 The classes/functions live somewhere under the window object.  In the example above, the code lives under window.myProject.
-(Kojak might be extended in the future to support code not directly accessible under window.)
+Kojak will probably be extended in the future to support code not directly accessible under window.
+It's not that hard to enable it for requireJS style modules with a quick shim to expose the modules to Kojak.
 
 To quickly get started with Kojak you could run the following commands in the browser's console:
 ````
