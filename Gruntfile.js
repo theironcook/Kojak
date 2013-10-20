@@ -12,6 +12,7 @@ module.exports = function(grunt){
         // it forces people to include yet another library just to use Kojak.
         // The order here is important. Don't change it.
         sourceFiles: [
+            'src/contains_shim.js',
             'src/Core.js',
             'src/Config.js',
             'src/Formatter.js',
