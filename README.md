@@ -20,7 +20,7 @@ If you want to profile ajax network requests you will need to include jQuery.
 ####How to use it (the short version)
 To use Kojak copy/download the Kojak.min.js file.  Include it in the browser code you want to profile.  You can include it with
 a normal script tag or you can also just copy and paste the Kojak.min.js file directly into a running browser console.
-You can actually profile code in any web site as long as you know what the code root namespaces are (discussed later).
+You can actually profile code in any web site as long as you know what the code root pakage names are.
 
 Kojak expects that your code is accessible via the window object.  A typical application might be assembled like this:
 
@@ -31,9 +31,10 @@ myProject.views.ViewA = function(){};
 myProject.utils.sharedUsefulFunction = function(){};
 ````
 
-The classes/functions live somewhere under the window object.  In the example above, the code lives under window.myProject.
+The pakages/classes/functions live somewhere under the window object.  In the example above, the code lives under window.myProject.
 Kojak will probably be extended in the future to support code not directly accessible under window.
-It's not that hard to enable it for requireJS style modules with a quick shim to expose the modules to Kojak.
+It's not that hard to enable Kojak for requireJS style modules with a quick shim to expose the modules to Kojak.
+[Here](https://github.com/theironcook/Kojak/blob/master/example/RequireJSExampleShim.js) is an example of how to hook up requireJS.
 
 To quickly get started with Kojak you could run the following commands in the browser's console:
 ````
