@@ -6,7 +6,8 @@ module.exports = function(grunt){
 
         banner: '// <%= pkg.name %> Version <%= pkg.version %> \n' +
                 '// Last built <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-                '// Distributed Under MIT License\n\n',
+                '// Distributed Under MIT License\n\n' +
+                '// (c) 2013 Bart Wood',
 
         // This file set is pretty small, I don't need anything fancy for dependencies like requireJS - especially if
         // it forces people to include yet another library just to use Kojak.
@@ -43,14 +44,13 @@ module.exports = function(grunt){
                 options: {
                     specs: 'spec/unit/FunctionProfileSpec.js'
                 }
+            },
+            instrumentBasic: {
+                src: ['src/contains_shim.js', 'src/Core.js', 'src/Config.js', 'src/FunctionProfile.js', 'src/Instrumentor.js'],
+                options: {
+                    specs: 'spec/functional/InstrumentBasicSpec.js'
+                }
             }
-            // Phantom isn't working the same as a browser for some crazy reason, not sure why yet
-//            instrumentBasic: {
-//                src: ['src/Core.js', 'src/Config.js', 'src/FunctionProfile.js', 'src/Instrumentor.js'],
-//                options: {
-//                    specs: 'spec/functional/InstrumentBasicSpec.js'
-//                }
-//            }
         },
 
         watch: {
