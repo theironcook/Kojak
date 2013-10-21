@@ -2,6 +2,14 @@
 describe('Instrumentor suite', function() {
 
     beforeEach(function(){
+        var blockThread = function (waitInMillis) {
+            var start = new Date() - 0;
+            var stop = start + waitInMillis;
+
+            while ((new Date() - 0) < stop) {
+            }
+        };
+
         window.FakeProject = {
             pakage1: {
                 ClassA: function(){},
@@ -19,17 +27,24 @@ describe('Instrumentor suite', function() {
             }
         };
 
-        FakeProject.pakage1.ClassA.staticFuncA = function(){};
-        FakeProject.pakage1.ClassA.prototype.memberFuncA = function(){};
+        FakeProject.pakage1.ClassA.staticFuncA = function(){
+            blockThread(10);
+            (new FakeProject.pakage1.ClassA()).memberFuncA();
+        };
+        FakeProject.pakage1.ClassA.prototype.memberFuncA = function(){
+            blockThread(10);
+            (new FakeProject.pakage1.ClassB()).memberFuncB();
+        };
+
         // Simple inheritance
         FakeProject.pakage1.ClassB.prototype = new FakeProject.pakage1.ClassA();
-        FakeProject.pakage1.ClassB.prototype.memberFuncB = function(){};
+        FakeProject.pakage1.ClassB.prototype.memberFuncB = function(){
+            blockThread(10);
+        };
 
         // Treat a Clazz as a Pakage
         FakeProject.pakage1.ClassB.NestedClass = function(){};
         FakeProject.pakage1.ClassB.NestedClass.prototype.nestedFunc = function(){};
-
-        FakeProject.pakage1.ClassB.prototype.memberFuncB = function(){};
 
         // Duplicate pakage reference - Kojak should be able to handle this and not die
         FakeProject.dupPakageRefA = {};
@@ -109,4 +124,11 @@ describe('Instrumentor suite', function() {
         expect(FakeProject.pakage1.dupFuncB._kFProfile.getCallCount()).toEqual(0);
     });
 
+    it('Measured times look ok', function(){
+        Kojak.instrumentor.instrument();
+        FakeProject.pakage1.ClassA.staticFuncA();
+        expect(FakeProject.pakage1.ClassA.staticFuncA._kFProfile.getCallCount()).toBe(1);
+        expect(Math.abs(30 - FakeProject.pakage1.ClassA.staticFuncA._kFProfile.getWholeTime()) < 5).toBeTruthy();
+        expect(Math.abs(10 - FakeProject.pakage1.ClassA.staticFuncA._kFProfile.getIsolatedTime()) < 5).toBeTruthy();
+    })
 });

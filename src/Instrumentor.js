@@ -151,29 +151,21 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
             funcPaths = candidates[kFuncId];
             origFunc = this._origFunctions[kFuncId];
 
-            if(funcPaths.length === 1){
-                // there are no duplicate references to the same function
-                if(!this._isFuncAClazz(funcPaths[0])){
-                    this._instrumentFunction(funcPaths[0], origFunc);
+            // figure out if any references look like a clazz reference
+            // I cannot wrap any function that people expect to use with the new operator - i.e. clazzes
+            // If there is even a single clazz I shouldn't wrap any of the functions
+            anyClazzes = false;
+            funcPaths.forEach(function(fullFuncPath){
+                if(this._isFuncAClazz(fullFuncPath)){
+                    anyClazzes = true;
                 }
-            }
-            else {
-                // figure out if any references look like a clazz reference
-                // I cannot wrap any function that people expect to use with the new operator - i.e. clazzes
-                // If there is even a single clazz I shouldn't wrap any of the functions
-                anyClazzes = false;
-                funcPaths.forEach(function(fullFuncPath){
-                    if(this._isFuncAClazz(fullFuncPath)){
-                        anyClazzes = true;
-                    }
-                }.bind(this));
+            }.bind(this));
 
-                if(!anyClazzes){
-                    // Each will have it's own independent wrapper that points to the original function
-                    funcPaths.forEach(function(fullFuncPath){
-                        this._instrumentFunction(fullFuncPath, origFunc);
-                    }.bind(this));
-                }
+            if(!anyClazzes){
+                // Each will have it's own independent wrapper that points to the original function
+                funcPaths.forEach(function(fullFuncPath){
+                    this._instrumentFunction(fullFuncPath, origFunc);
+                }.bind(this));
             }
         }
     },
