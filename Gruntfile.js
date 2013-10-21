@@ -6,8 +6,8 @@ module.exports = function(grunt){
 
         banner: '// <%= pkg.name %> Version <%= pkg.version %> \n' +
                 '// Last built <%= grunt.template.today("yyyy-mm-dd") %>\n' +
-                '// Distributed Under MIT License\n\n' +
-                '// (c) 2013 Bart Wood',
+                '// Distributed Under MIT License\n' +
+                '// (c) 2013 Bart Wood \n\n',
 
         // This file set is pretty small, I don't need anything fancy for dependencies like requireJS - especially if
         // it forces people to include yet another library just to use Kojak.
