@@ -38,7 +38,6 @@ If your using something like requireJS that hides your code, you will probably n
 You can copy the same pattern with almost any module style code.
 
 <br>
-####How to use it (short version)
 To get an idea of how Kojak works type you can quickly test this in a browser console:
 ````
   // First copy this into the browser console:
