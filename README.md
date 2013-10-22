@@ -1,15 +1,15 @@
 ##Kojak: A simple JavaScript profiler [![Build Status](https://api.travis-ci.org/theironcook/Kojak.png)](http://travis-ci.org/theironcook/Kojak)
 
 ####What is Kojak?
-Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks which of your
+Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks when your
 functions are called, how often they are called, how much time they are taking, how the functions were called.  It can also track your ajax calls
-and help figure out how fast they are. (<a href="http://en.wikipedia.org/wiki/Kojak">Kojak</a> was a tv show detective)
+and help figure out how fast they are. 
+(Kojak was a <a href="http://en.wikipedia.org/wiki/Kojak">tv show detective</a>)
 
 ####Why Kojak?
-I've found that Chrome's developer tools or Firebug have too much noise to make sense of my own code.  I needed a tool
-that would remove all of the noise of external or core JavaScript code.  Kojak helps you focus on the performance of
-your own code and eliminate the clutter.  It's helped me / my project to significantly speed up our JavaScript code. Hopefully
-it can help you and your projects.
+I've found that Chrome's developer tools or Firebug have too much noise to make much sense of my own code.  I needed a tool
+that would remove all of the noise.  Kojak helps you focus on the performance of your own code and eliminate the clutter.  
+It's helped me / my project to significantly speed up our JavaScript code. Hopefully it can help you and your projects.
 
 ####Dependencies
 The core of Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is
@@ -19,39 +19,56 @@ If you want to profile ajax network requests you will need to include jQuery.
 <br>
 ####How to use it (the short version)
 To use Kojak copy/download the Kojak.min.js file.  Include it in the browser code you want to profile.  You can include it with
-a normal script tag or you can also just copy and paste the Kojak.min.js file directly into a running browser console.
+a normal `script` tag or you can also just copy and paste the contents of the Kojak.min.js file directly into a running browser console.
 You can actually profile code in any web site as long as you know what the code root pakage names are.
 
-Kojak expects that your code is accessible via the window object.  A typical application might be assembled like this:
+Kojak expects that your code is accessible via the window object.  A simple application might be assembled like this:
 
 ````
 var myProject = {models: {}, views: {}, controllers: {}, utils: {}};
 myProject.models.ModelA = function(){};
-myProject.views.ViewA = function(){};
+myProject.models.ModelA.prototype.modelAFunc = function(){};
 myProject.utils.sharedUsefulFunction = function(){};
 ````
 
-The pakages/classes/functions live somewhere under the window object.  In the example above, the code lives under window.myProject.
+Kojak expects that the code lives somewhere under the `window` object.  In the example above, the code lives under `window.myProject`.
 
-If your using something like requireJS, you will probably need to expose your modules to Kojak with a quick shim.
+If your using something like requireJS that hides your code, you will probably need to expose your modules to Kojak with a quick shim.
 [Here](https://github.com/theironcook/Kojak/blob/master/example/RequireJSExampleShim.js) is an example of how to hook up requireJS.
+You can copy the same pattern with almost any module style code.
 
-To quickly get started with Kojak you could run the following commands in the browser's console:
+<br>
+####How to use it (short version)
+To get an idea of how Kojak works type you can quickly test this in a browser console:
 ````
-  // replace with your own root package names
+  // First copy this into the browser console:
+  var myProject = {models: {}, views: {}, controllers: {}, utils: {}};
+  myProject.models.ModelA = function(){};
+  myProject.models.ModelA.prototype.modelAFunc = function(){};
+  myProject.utils.sharedUsefulFunction = function(){};
+
+  // Copy the Kojak.min.js content into the browser console:
+  // https://github.com/theironcook/Kojak/blob/master/Kojak.min.js
+
+  // this tells Kojak what code it should care about
   kConfig.setIncludedPakages(['myProject']);
 
-  // this will root recursively through all your code, starting with the included packages and wrap every
+  // this will root recursively through all the code, starting with the included packages and wrap every
   // single function it finds to keep track of all of the function's runtime information
   kInst.instrument();
 
   // See which functions have been instrumented in your application
-  kRep.instrumentedCode();
+  kRep.instrumentedCode({verbose: true});
 
-  // Now you should do something with your application that does not include a full page refresh
+  // Now you would normally do something with your application that does not include a full page refresh
+  // Run this as a simple example
+  myProject.utils.sharedUsefulFunction();
+  (new myProject.models.ModelA()).modelAFunc();
 
-  // Now see which are your slowest functions.  This only includes the instrumented functions.
-  kRep.funcPerf();
+  // Now see the function performance stats.  
+  // This only includes the instrumented functions.
+  // In this example, you can see that the functions were both called once
+  kRep.funcPerf({sortBy: 'CallCount'});
 ````
 
 Kojak has a lot of other features that I'll explain later, but first I need to explain how Kojak makes sense of JavaScript.
