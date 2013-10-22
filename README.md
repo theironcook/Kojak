@@ -84,7 +84,7 @@ Kojak recognizes 3 types of data structures in your code
 
 A `Pakage` is anything that might contain your code. A `Pakage` might be a Plain Old JavaScript Object (POJO) that looks like {}.
 A `Pakage` might also be a `Clazz` that contains other `Clazzes` or `Pakages`.
-In the example below, myProject, myProject.models, myProject.models.ModelA and myProject.models.ModelA.NestedModelB are all considered Pakages:
+In the example below, myProject, myProject.models, myProject.views, myProject.models.ModelA and myProject.models.ModelA.NestedModelB are all considered Pakages:
 ````
 var myProject = {models: {}, views: {}};
 myProject.models.ModelA = function(){};
@@ -92,10 +92,10 @@ myProject.models.ModelA.NestedModelB = function(){};
 ````
 
 A `Clazz` is a function that is expected to be used with the `new` operator.  `Clazzes` are expected to be named starting
-with an upper case character. In the previous example ModelA and NestedModelB are both `Classes`.
+with an upper case character. In the previous example ModelA and NestedModelB are both `Clazzes`.
 
-A `function` is just a normal JavaScript function that Kojak does not think is a `Clazz`.  Kojak looks for functions
-in `Pakage`, `Clazz` or under the `Clazz`.`prototype`.
+A `function` is just a normal JavaScript function that Kojak does not think is a `Clazz` because it is not referenced with a string that starts
+with an upper case character.  Kojak looks for functions in `Pakages`, `Clazzes` or under the `Clazz`.`prototype` object.
 
 For example, Kojak will profile the functions `packageFunction`, `classLevelFunction` and the `prototypeLevelFunction`:
 ````
@@ -121,7 +121,8 @@ In the example above, ModelA is also referenced with the name refToModelA.  Koja
 reference the same function and that one of those references looks like a Clazz.  In that situation, Kojak will assume
 all references should behave as a Clazz.  If Kojak accidentally wraps a function and the function is invoked with the
 `new` operator Kojak will throw a runtime exception with a message explaining which function was instrumented incorrectly
-as a function instead of a Clazz.
+as a function instead of a Clazz. You can either rename the Clazz reference to an uppercase, create a dummy duplicate reference
+to the Clazz that starts with an upper case letter or you can tell Kojak to ignore that Clazz/function using kConfig.setExcludedPaths.
 
 <br>
 ####How to use it (the long version)
