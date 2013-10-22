@@ -162,7 +162,7 @@ After you have told Kojak to instrument your code you can now invoke your code. 
 After some of your code has ran you want to see why it was so slow.  To determine which functions are too slow run the command:
 ```` kRep.funcPerf(); ````
 
-By default, this function will return the 20 slowest functions that have been profiled. For example:
+By default, this function will return the 20 slowest functions (sorted by IsolatedTime) that have been profiled. For example:
 
 ````
 Top 20 functions displayed sorted by IsolatedTime'
@@ -192,6 +192,9 @@ funcB         2,000              2,000         1
 
 funcA's IsolatedTime would be 1,000 milliseconds but it's whole time would be 3,000 milliseconds.  Most of the time, you
  will probably care more about IsolatedTime than WholeTime.
+
+IsolatedTime, WholeTime and CallCount are cumulative values that are captured from the time you called kInst.instrument();
+IsolatedTime and WholeTime are not averages - they are cumulative.  IsolatedTime/CallCount will give you the average.
 
 The funcPerf() function can take the following options:
 * sortBy - kRep.funcPerf({sortBy: 'WholeTime'});
