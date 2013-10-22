@@ -48,14 +48,14 @@ module.exports = function(grunt){
             instrumentBasic: {
                 src: ['src/contains_shim.js', 'src/Core.js', 'src/Config.js', 'src/FunctionProfile.js', 'src/Instrumentor.js'],
                 options: {
-                    specs: 'spec/functional/InstrumentBasicSpec.js'
+                    specs: 'spec/integration/InstrumentBasicSpec.js'
                 }
             }
         },
 
         watch: {
             scripts: {
-                files: ['<%= sourceFiles %>', 'spec/unit/**Spec.js', 'spec/functional/**Spec.js'],
+                files: ['<%= sourceFiles %>', 'spec/unit/**Spec.js', 'spec/integration/**Spec.js'],
                 tasks: ['buildDev'],
                 options: {
                     spawn: false

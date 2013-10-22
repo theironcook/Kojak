@@ -1,4 +1,3 @@
-// This is really a functional test, but more useful than strict unit tests
 describe('Instrumentor suite', function() {
 
     beforeEach(function(){
