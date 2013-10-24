@@ -17,8 +17,8 @@ describe('FunctionProfile suite', function() {
         recordStopFunction: function(fProfile){
             var startTime = fProfile.popStartTime();
             var callTime = (new Date()) - startTime;
-            fProfile.addWholeTime(callTime);
-            fProfile.addIsolatedTime(callTime);
+
+            fProfile.recordCallMetrics('', callTime, callTime);
         }
     };
 

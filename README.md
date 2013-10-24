@@ -166,7 +166,7 @@ By default, this function will return the 20 slowest functions (sorted by Isolat
 
 ````
 Top 20 functions displayed sorted by IsolatedTime'
---KPath--                                                                    --IsolatedTime--  --WholeTime--  --CallCount--
+--KPath--                                                                    --IsolatedTime--  --WholeTime--  --CallCount-- ...
 MyProject.views.schedule.ResourceListView.prototype._positionAppointments     392               426            77
 MyProject.views.schedule.ResourceListView.prototype._createGridLines          351               367            35
 MyProject.domain.BaseModel.prototype.get                                       99                230            14,679
@@ -175,7 +175,7 @@ MyProject.views.schedule.ScheduleView.prototype._sizeWeekViewResourceColumns   7
 ...
 ````
 
-The funcPerf() will report 3 different fields for each function
+The funcPerf() will report 3 main fields for each function
  * IsolatedTime
  * WholeTime
  * CallCount
@@ -185,7 +185,7 @@ IsolatedTime is how much cumulative time was spent inside the function itself.  
 For example, funcA takes 1 second and funcB takes 2 seconds.  If we modify funcA to internally call funcB the results would
 look like this:
 ````
---KPath--  --IsolatedTime--  --WholeTime--  --CallCount--
+--KPath--  --IsolatedTime--  --WholeTime--  --CallCount-- ...
 funcA         1,000              3,000         1
 funcB         2,000              2,000         1
 ````
@@ -200,6 +200,13 @@ The funcPerf() function can take the following options:
 * sortBy - kRep.funcPerf({sortBy: 'WholeTime'});
 * max - kRep.funcPerf({max: 30}); // I want 30 results instead of the default of 20
 * filter - kRep.funcPerf({filter: ['BaseModel', 'BaseView']}); // I only want results that contain 'BaseModel' or 'BaseView' in their path
+
+funcPerf will also report 4 additional fields you might find useful
+* AvgIsolatedTime - this is just IsolatedTime / CallCount
+* AvgWholeTime - this is just WholeTime / CallCount
+* MaxIsolatedTime - this is the maximum isolated time across all different invocations of the function - the slowest time the function was called.
+* MaxWholeTime - this is the maximum whole time across all different invocations of the function - the slowest time the function was called.
+
 
 <br>
 After seeing what your slowest functions are you might want to know how they are being invoked.  This is particularly
@@ -335,7 +342,7 @@ kRep.instrumentedCode(options);
 
 // Check the instrumented function performance
 // options is a JavaScript object that can have the following values
-//   sortBy - possible values include 'IsolatedTime', 'WholeTime', 'CallCount'
+//   sortBy - possible values include 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime'
 //   max - how many rows do you want to return
 //   filter: ['xxx', 'xxx'] - can be a string or an array of strings.  Only code matching a filter will be reported
 kRep.funcPerf(options);

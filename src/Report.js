@@ -132,7 +132,7 @@ Kojak.Report = {
 
 
     funcPerf: function(opts){
-        this._functionPerfProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount']);
+        this._functionPerfProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime']);
     },
 
     funcPerfAfterCheckpoint: function(opts){
@@ -147,8 +147,12 @@ Kojak.Report = {
         else if(!opts.sortBy){
             opts.sortBy = 'IsolatedTime_Checkpoint';
         }
+        else {
+            opts.sortyBy += '_Checkpoint';
+        }
 
-        this._functionPerfProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint']);
+        console.log('Results since checkpoint taken: ' + Kojak.instrumentor.getLastCheckpointTime().toString('hh:mm:ss tt'));
+        this._functionPerfProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint',  'AvgIsolatedTime_Checkpoint', 'AvgWholeTime_Checkpoint', 'MaxIsolatedTime_Checkpoint', 'MaxWholeTime_Checkpoint']);
     },
 
 
@@ -163,7 +167,7 @@ Kojak.Report = {
             kFProfile,
             fieldCount,
             totals = {},
-            totalsRow = ['Totals across all instrumented functions: '];
+            totalsRow = ['--Totals across all instrumented functions: '];
 
         if(!Kojak.instrumentor.hasInstrumented()){
             console.log('You have not ran Kojak.instrumentor.instrument() yet.');
@@ -195,7 +199,7 @@ Kojak.Report = {
             });
 
             reportRow = [];
-            props.forEach(function(prop){reportRow.push('--' + prop + '--');});
+            props.forEach(function(prop){reportRow.push('--' + prop.replace('_Checkpoint', '') + '--');});
             report.push(reportRow);
 
             for (profileCount = 0; profileCount < profilesWithData.length && profileCount < opts.max; profileCount++) {
@@ -215,7 +219,8 @@ Kojak.Report = {
 
                     if(prop !== 'KPath'){
                         val = kFProfile.getProperty(prop);
-                        if(Kojak.Core.isNumber(val)){
+
+                        if(this._isPropReportInTotals(prop) && Kojak.Core.isNumber(val)){
                             if(!totals[prop]){
                                 totals[prop] = 0;
                             }
@@ -241,6 +246,15 @@ Kojak.Report = {
         }
     },
 
+    _isPropReportInTotals: function(prop){
+        return prop === 'IsolatedTime' ||
+               prop === 'IsolatedTime_Checkpoint' ||
+               prop === 'WholeTime' ||
+               prop === 'WholeTime_Checkpoint' ||
+               prop === 'CallCount' ||
+               prop === 'CallCount_Checkpoint';
+    },
+
     callPaths: function(funcPath){
         var funcWrapper, kFProfile, callPaths, callPath, count, sorted = [], pathsReport = [], summaryReport = [];
 
@@ -264,7 +278,7 @@ Kojak.Report = {
             return b.count - a.count;
         });
 
-        pathsReport.push(['--Call Count--', '--Invocation Path--']);
+        pathsReport.push(['--Call Count--', '--Call Path--']);
         sorted.forEach(function(item){
             pathsReport.push([item.count, item.path]);
         }.bind(this));

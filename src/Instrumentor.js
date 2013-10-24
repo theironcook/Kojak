@@ -233,7 +233,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
         this._stackLevelCumTimes[this._stackLevel] = 0;
         this._stackContexts[this._stackLevel] = functionProfile.getKPath();
 
-        functionProfile.pushStartTime(new Date(), this._stackContexts.join(' > '));
+        functionProfile.pushStartTime(new Date());
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {
             console.log(Kojak.Formatter.makeTabs(this._stackLevel) + 'start: ' + functionProfile.getKPath(), Kojak.Formatter.number(functionProfile.getIsolatedTime()));
@@ -242,15 +242,16 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
 
     // Only should be called from FunctionProfile
     recordStopFunction: function (functionProfile) {
-        var startTime, callTime;
+        var startTime, wholeTime, isolatedTime;
 
         this._stackLevel--;
         startTime = functionProfile.popStartTime();
-        callTime = (new Date()) - startTime;
+        wholeTime = (new Date()) - startTime;
+        isolatedTime = wholeTime - this._stackLevelCumTimes[this._stackLevel + 1];
 
-        functionProfile.addWholeTime(callTime);
-        functionProfile.addIsolatedTime(callTime - this._stackLevelCumTimes[this._stackLevel + 1]);
-        this._stackLevelCumTimes[this._stackLevel] += callTime;
+        functionProfile.recordCallMetrics(this._stackContexts.join(' > '), isolatedTime, wholeTime);
+
+        this._stackLevelCumTimes[this._stackLevel] += wholeTime;
         this._stackContexts.pop();
 
         if (Kojak.Config.getRealTimeFunctionLogging()) {

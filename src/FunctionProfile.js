@@ -16,8 +16,13 @@ Kojak.FunctionProfile = function (container, functionName, origFunction) {
     this._startTimes = [];
     this._callCount = 0;
     this._callPaths = {};
+
     this._wholeTime = 0;
+    this._wholeTimes = [];
+
     this._isolatedTime = 0;
+    this._isolatedTimes = [];
+
     this.takeCheckpoint();
 
     this._wrappedFunction = function(){
@@ -65,26 +70,38 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
 
     pushStartTime: function(startTime, callPath){
         this._startTimes.push(startTime);
-        this._callCount++;
-
-        if(!this._callPaths[callPath]){
-            this._callPaths[callPath] = 1;
-        }
-        else {
-            this._callPaths[callPath]++;
-        }
     },
 
     popStartTime: function(){
         return this._startTimes.pop();
     },
 
-    addWholeTime: function(addMe){
-        this._wholeTime += addMe;
+    recordCallMetrics: function(callPath, isolatedTime, wholeTime){
+        if(!this._callPaths[callPath]){
+            this._callPaths[callPath] = 1;
+        }
+        else {
+            this._callPaths[callPath]++;
+        }
+
+        this._callCount++;
+
+        this._isolatedTime += isolatedTime;
+        this._wholeTime += wholeTime;
+
+        this._isolatedTimes.push(isolatedTime);
+        this._wholeTimes.push(wholeTime);
+
+        this._isolatedTimes_checkpoint.push(isolatedTime);
+        this._wholeTimes_checkpoint.push(wholeTime);
     },
 
-    addIsolatedTime: function(addMe){
-        this._isolatedTime += addMe;
+    takeCheckpoint: function(){
+        this._callCount_checkpoint = this._callCount;
+        this._wholeTime_checkpoint = this._wholeTime;
+        this._isolatedTime_checkpoint = this._isolatedTime;
+        this._wholeTimes_checkpoint = [];
+        this._isolatedTimes_checkpoint = [];
     },
 
     getProperty: function(propName){
@@ -107,10 +124,46 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
         return this._isolatedTime;
     },
 
-    takeCheckpoint: function(){
-        this._callCount_checkpoint = this._callCount;
-        this._wholeTime_checkpoint = this._wholeTime;
-        this._isolatedTime_checkpoint = this._isolatedTime;
+    getAvgIsolatedTime: function(){
+        if(this._callCount > 0){
+            return this._isolatedTime / this._callCount;
+        }
+        else {
+            return 0;
+        }
+    },
+
+    getAvgWholeTime: function(){
+        if(this._callCount > 0){
+            return this._wholeTime / this._callCount;
+        }
+        else {
+            return 0;
+        }
+    },
+
+    getMaxIsolatedTime: function(){
+        var max = 0;
+
+        this._isolatedTimes.forEach(function(isoTime){
+            if(isoTime > max){
+                max = isoTime;
+            }
+        });
+
+        return max;
+    },
+
+    getMaxWholeTime: function(){
+        var max = 0;
+
+        this._wholeTimes.forEach(function(wholeTime){
+            if(wholeTime > max){
+                max = wholeTime;
+            }
+        });
+
+        return max;
     },
 
     getCallCount_Checkpoint: function(){
@@ -123,5 +176,47 @@ Kojak.Core.extend(Kojak.FunctionProfile.prototype, {
 
     getIsolatedTime_Checkpoint: function(){
         return this._isolatedTime - this._isolatedTime_checkpoint;
+    },
+
+    getAvgIsolatedTime_Checkpoint: function(){
+        if(this.getCallCount_Checkpoint() > 0){
+            return this._isolatedTime / this.getCallCount_Checkpoint();
+        }
+        else {
+            return 0;
+        }
+    },
+
+    getAvgWholeTime_Checkpoint: function(){
+        if(this.getCallCount_Checkpoint() > 0){
+            return this._wholeTime_checkpoint / this.getCallCount_Checkpoint();
+        }
+        else {
+            return 0;
+        }
+    },
+
+    getMaxIsolatedTime_Checkpoint: function(){
+        var max = 0;
+
+        this._isolatedTimes_checkpoint.forEach(function(isoTime){
+            if(isoTime > max){
+                max = isoTime;
+            }
+        });
+
+        return max;
+    },
+
+    getMaxWholeTime_Checkpoint: function(){
+        var max = 0;
+
+        this._wholeTimes_checkpoint.forEach(function(wholeTime){
+            if(wholeTime > max){
+                max = wholeTime;
+            }
+        });
+
+        return max;
     }
 });
