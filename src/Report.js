@@ -2,10 +2,6 @@
 
 Kojak.Report = {
 
-    // Default function options
-    _INST_CODE_DEFAULT_OPTS: {},
-    _FUNC_PROFILE_DEFAULT_OPTS: {max: 20, sortBy: 'IsolatedTime'},
-
     // opts are
     //  filter: a string or an array of strings.  If a function's kPath partially matches any of the filter strings it's included
     //  verbose: true.  If you want to see each individual named function
@@ -18,7 +14,7 @@ Kojak.Report = {
         }
 
         optsWereEmpty = !opts;
-        opts = Kojak.Core.extend(opts || {}, Kojak.Report._INST_CODE_DEFAULT_OPTS);
+        opts = opts || {};
 
         if(opts && opts.filter){
             Kojak.Core.assert( Kojak.Core.isString(opts.filter) || Kojak.Core.isStringArray(opts.filter),
@@ -132,6 +128,18 @@ Kojak.Report = {
 
 
     funcPerf: function(opts){
+        if(!opts){
+            opts = {};
+        }
+
+        if(!opts.sortBy){
+            opts.sortBy = 'IsolatedTime';
+        }
+
+        if(!opts.max){
+            opts.max = 20;
+        }
+
         this._functionPerfProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime']);
     },
 
@@ -142,13 +150,15 @@ Kojak.Report = {
         }
 
         if(!opts){
-            opts = {sortBy: 'IsolatedTime_Checkpoint'};
+            opts = {};
         }
-        else if(!opts.sortBy){
+
+        if(!opts.sortBy){
             opts.sortBy = 'IsolatedTime_Checkpoint';
         }
-        else {
-            opts.sortyBy += '_Checkpoint';
+
+        if(!opts.max){
+            opts.max = 20;
         }
 
         console.log('Results since checkpoint taken: ' + Kojak.instrumentor.getLastCheckpointTime().toString('hh:mm:ss tt'));
@@ -175,8 +185,6 @@ Kojak.Report = {
         }
 
         try {
-            opts = Kojak.Core.extend(Kojak.Report._FUNC_PROFILE_DEFAULT_OPTS, opts);
-
             if(opts.filter){
                 Kojak.Core.assert( Kojak.Core.isString(opts.filter) || Kojak.Core.isStringArray(opts.filter),
                     'filter must be a string or an array of strings');
