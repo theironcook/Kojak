@@ -208,10 +208,10 @@ After you have told Kojak to instrument your code you can now invoke your code. 
 After some of your code has ran you want to see why it was so slow.  To determine which functions are too slow run the command:
 <code>kRep.funcPerf();</code></p>
 
-<p>By default, this function will return the 20 slowest functions that have been profiled. For example:</p>
+<p>By default, this function will return the 20 slowest functions (sorted by IsolatedTime) that have been profiled. For example:</p>
 
 <pre><code>Top 20 functions displayed sorted by IsolatedTime'
---KPath--                                                                    --IsolatedTime--  --WholeTime--  --CallCount--
+--KPath--                                                                    --IsolatedTime--  --WholeTime--  --CallCount-- ...
 MyProject.views.schedule.ResourceListView.prototype._positionAppointments     392               426            77
 MyProject.views.schedule.ResourceListView.prototype._createGridLines          351               367            35
 MyProject.domain.BaseModel.prototype.get                                       99                230            14,679
@@ -220,7 +220,7 @@ MyProject.views.schedule.ScheduleView.prototype._sizeWeekViewResourceColumns   7
 ...
 </code></pre>
 
-<p>The funcPerf() will report 3 different fields for each function</p>
+<p>The funcPerf() will report 3 main fields for each function</p>
 
 <ul>
 <li>IsolatedTime</li>
@@ -231,7 +231,7 @@ MyProject.views.schedule.ScheduleView.prototype._sizeWeekViewResourceColumns   7
 <p>For example, funcA takes 1 second and funcB takes 2 seconds.  If we modify funcA to internally call funcB the results would
 look like this:</p>
 
-<pre><code>--KPath--  --IsolatedTime--  --WholeTime--  --CallCount--
+<pre><code>--KPath--  --IsolatedTime--  --WholeTime--  --CallCount-- ...
 funcA         1,000              3,000         1
 funcB         2,000              2,000         1
 </code></pre>
@@ -239,12 +239,22 @@ funcB         2,000              2,000         1
 <p>funcA's IsolatedTime would be 1,000 milliseconds but it's whole time would be 3,000 milliseconds.  Most of the time, you
  will probably care more about IsolatedTime than WholeTime.</p>
 
+<p>IsolatedTime, WholeTime and CallCount are cumulative values that are captured from the time you called kInst.instrument();
+IsolatedTime and WholeTime are not averages - they are cumulative.  IsolatedTime/CallCount will give you the average.</p>
+
 <p>The funcPerf() function can take the following options:</p>
 
 <ul>
 <li>sortBy - kRep.funcPerf({sortBy: 'WholeTime'});</li>
 <li>max - kRep.funcPerf({max: 30}); // I want 30 results instead of the default of 20</li>
 <li>filter - kRep.funcPerf({filter: ['BaseModel', 'BaseView']}); // I only want results that contain 'BaseModel' or 'BaseView' in their path</li>
+</ul><p>funcPerf will also report 4 additional fields you might find useful</p>
+
+<ul>
+<li>AvgIsolatedTime - this is just IsolatedTime / CallCount</li>
+<li>AvgWholeTime - this is just WholeTime / CallCount</li>
+<li>MaxIsolatedTime - this is the maximum isolated time across all different invocations of the function - the slowest time the function was called.</li>
+<li>MaxWholeTime - this is the maximum whole time across all different invocations of the function - the slowest time the function was called.</li>
 </ul><p><br>
 After seeing what your slowest functions are you might want to know how they are being invoked.  This is particularly
 important for when a function's CallCount is unacceptably high.</p>
@@ -379,7 +389,7 @@ kRep.instrumentedCode(options);
 
 // Check the instrumented function performance
 // options is a JavaScript object that can have the following values
-//   sortBy - possible values include 'IsolatedTime', 'WholeTime', 'CallCount'
+//   sortBy - possible values include 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime'
 //   max - how many rows do you want to return
 //   filter: ['xxx', 'xxx'] - can be a string or an array of strings.  Only code matching a filter will be reported
 kRep.funcPerf(options);
