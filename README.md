@@ -1,4 +1,4 @@
-##Kojak: A simple JavaScript profiler [![Build Status](https://api.travis-ci.org/theironcook/Kojak.png)](http://travis-ci.org/theironcook/Kojak)
+##Kojak: A simple JavaScript performance profiler [![Build Status](https://api.travis-ci.org/theironcook/Kojak.png)](http://travis-ci.org/theironcook/Kojak)
 
 ####What is Kojak?
 Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks when your
@@ -8,8 +8,9 @@ and help figure out how fast they are.
 
 ####Why Kojak?
 I've found that Chrome's developer tools or Firebug have too much noise to make much sense of my own code.  I needed a tool
-that would remove all of the noise.  Kojak helps you focus on the performance of your own code and eliminate the clutter.  
-It's helped me / my project to significantly speed up our JavaScript code. Hopefully it can help you and your projects.
+that would remove all of the noise and clutter.  I wanted a tool that was easy to configure and didn't force me to inject hooks all over
+my code.  Kojak helps you focus on the performance of your own code and eliminate the clutter.  It's helped me / my project
+to significantly speed up our JavaScript code. Hopefully it can help you and your projects.
 
 ####Dependencies
 The core of Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is

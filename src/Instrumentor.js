@@ -102,7 +102,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                             curPakageNames.push(pakagePath + '.' + childName);
                         }
                         else if(childKojakType === Kojak.Core.CLAZZ){
-                            // Possibly treat a clazz as a possible pakage?
+                            // Treat a clazz as a possible pakage
                             curPakageNames.push(pakagePath + '.' + childName);
 
                             // Check the clazz function's prototype for functions
@@ -139,7 +139,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
     },
 
     _shouldIgnoreFunction: function(pakagePath, funcName){
-        // not sure if this is important
+        // possibly ignore functions name constructor
         //name === 'constructor';
         return Kojak.Config.arePathsExcluded(pakagePath, pakagePath + '.' + funcName, funcName);
     },
