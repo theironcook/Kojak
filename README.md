@@ -72,7 +72,7 @@ To get an idea of how Kojak works type you can quickly test this in a browser co
 ````
 
 <br>
-I have also added an [https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App](example of how to profile the Backbone MVC todo application).
+I have also added an <a href="https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App">example of how to profile the Backbone MVC todo application</a>.
 Other examples might follow.
 
 
