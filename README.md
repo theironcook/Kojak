@@ -71,6 +71,11 @@ To get an idea of how Kojak works type you can quickly test this in a browser co
   kRep.funcPerf({sortBy: 'CallCount'});
 ````
 
+<br>
+I have also added an [https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App](example of how to profile the Backbone MVC todo application).
+Other examples might follow.
+
+
 Kojak has a lot of other features that I'll explain later, but first I need to explain how Kojak makes sense of JavaScript.
 
 <br>
