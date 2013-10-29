@@ -107,8 +107,8 @@ For example, Kojak will profile the functions `packageFunction`, `classLevelFunc
 ````
 myProject.packageFunction = function(){};
 myProject.models.ModelA = function(){};
-myProject.models.ModelA.classLevelFunction(){};
-myProject.models.ModelA.prototype.prototypeLevelFunction(){};
+myProject.models.ModelA.classLevelFunction = function(){};
+myProject.models.ModelA.prototype.prototypeLevelFunction = function(){};
 ````
 
 It's important for Kojak to understand when a function will be invoked with the `new` operator and to avoid wrapping
