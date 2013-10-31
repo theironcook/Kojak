@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" ng-app="todomvc" data-framework="angularjs">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<title>AngularJS • TodoMVC</title>
+		<link rel="stylesheet" href="bower_components/todomvc-common/base.css">
+		<style>[ng-cloak] { display: none; }</style>
+	</head>
+	<body>
+		<section id="todoapp" ng-controller="TodoCtrl">
+			<header id="header">
+				<h1>todos</h1>
+				<form id="todo-form" ng-submit="addTodo()">
+					<input id="new-todo" placeholder="What needs to be done?" ng-model="newTodo" autofocus>
+				</form>
+			</header>
+			<section id="main" ng-show="todos.length" ng-cloak>
+				<input id="toggle-all" type="checkbox" ng-model="allChecked" ng-click="markAll(allChecked)">
+				<label for="toggle-all">Mark all as complete</label>
+				<ul id="todo-list">
+					<li ng-repeat="todo in todos | filter:statusFilter" ng-class="{completed: todo.completed, editing: todo == editedTodo}">
+						<div class="view">
+							<input class="toggle" type="checkbox" ng-model="todo.completed">
+							<label ng-dblclick="editTodo(todo)">{{todo.title}}</label>
+							<button class="destroy" ng-click="removeTodo(todo)"></button>
+						</div>
+						<form ng-submit="doneEditing(todo)">
+							<input class="edit" ng-model="todo.title" todo-escape="revertEditing(todo)" todo-blur="doneEditing(todo)" todo-focus="todo == editedTodo">
+						</form>
+					</li>
+				</ul>
+			</section>
+			<footer id="footer" ng-show="todos.length" ng-cloak>
+				<span id="todo-count"><strong>{{remainingCount}}</strong>
+					<ng-pluralize count="remainingCount" when="{ one: 'item left', other: 'items left' }"></ng-pluralize>
+				</span>
+				<ul id="filters">
+					<li>
+						<a ng-class="{selected: location.path() == '/'} " href="#/">All</a>
+					</li>
+					<li>
+						<a ng-class="{selected: location.path() == '/active'}" href="#/active">Active</a>
+					</li>
+					<li>
+						<a ng-class="{selected: location.path() == '/completed'}" href="#/completed">Completed</a>
+					</li>
+				</ul>
+				<button id="clear-completed" ng-click="clearCompletedTodos()" ng-show="completedCount">Clear completed ({{completedCount}})</button>
+			</footer>
+		</section>
+		<footer id="info">
+			<p>Double-click to edit a todo</p>
+			<p>Credits:
+				<a href="http://twitter.com/cburgdorf">Christoph Burgdorf</a>,
+				<a href="http://ericbidelman.com">Eric Bidelman</a>,
+				<a href="http://jacobmumm.com">Jacob Mumm</a> and
+				<a href="http://igorminar.com">Igor Minar</a>
+			</p>
+			<p>Part of <a href="http://todomvc.com">TodoMVC</a></p>
+		</footer>
+		<script src="bower_components/todomvc-common/base.js"></script>
+		<script src="bower_components/angular/angular.js"></script>
+		<script src="js/app.js"></script>
+		<script src="js/controllers/todoCtrl.js"></script>
+		<script src="js/services/todoStorage.js"></script>
+		<script src="js/directives/todoFocus.js"></script>
+		<script src="js/directives/todoBlur.js"></script>
+		<script src="js/directives/todoEscape.js"></script>
+
+
+        <!--BEGIN NEW CODE to demonstrate how you might use Kojak-->
+
+        <!--Add Kojak-->
+        <!--You might conditionally add Kojak based on dynamic state / if your profiling your code.  Maybe with a query string parameter?-->
+        <script src="../../Kojak.min.js"></script>
+
+        <script>
+            angular.element(document).ready( function(){
+
+                // Most of the goodies in an angular app seem to be the functions defined in the controller scope?
+                // It looks like you would need to write an angular shim like this to expose your controller scopes
+                // to Kojak in some way like this.  Angular's scope definitions seem pretty clean
+                // I barely know Angular so there might be a better way to do this
+                var todoScope = angular.element(document.getElementById('todoapp')).scope();
+
+                window.kScopes = {TodoCtrl_scope : todoScope};
+
+                kConfig.setIncludedPakages(['kScopes']);
+
+                // Uncomment this if you want to see which functions are executing in real time
+//                kConfig.setRealTimeFunctionLogging(true);
+
+                // This todoMVC example app is too small / simple / fast.
+                // I need to introduce artificial performance blocks to make things more interesting
+                // Normally Kojak is most useful for large apps
+                var blockThread = function (waitInMillis) {
+                    var start = new Date() - 0;
+                    var stop = start + waitInMillis;
+                    while ((new Date() - 0) < stop) {}
+                };
+
+                // You would never do this in a real app, it's just to make this example a bit more interesting
+                var orig = todoScope.addTodo;
+                todoScope.addTodo = function(){
+                    blockThread(250);
+                    orig.apply(todoScope, arguments);
+                };
+
+                // Now tell Kojak to instrument the code under _scopesForKojak
+                kInst.instrument();
+
+                // Have Kojak report which functions were instrumented
+                kRep.instrumentedCode({verbose: true});
+
+                console.log('\n\nPlease create a few todos to execute the code');
+                console.log('Then run these commands in the console:')
+                console.log('\tkRep.funcPerf({sortBy: \'CallCount\'});');
+                console.log('\tkRep.funcPerf({sortBy: \'IsolatedTime\'});');
+            });
+        </script>
+
+	</body>
+</html>
