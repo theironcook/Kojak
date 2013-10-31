@@ -73,6 +73,11 @@ To get an idea of how Kojak works type you can quickly test this in a browser co
 
 <br>
 I have also added an <a href="https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App">example of how to profile the Backbone MVC todo application</a>.
+
+I spent a few hours with the Ember Todo MVC example but could not get it working with Kojak.  Ember looks like a pretty cool framework 
+(I've spent a total of 3 hours with it) but it appears to be a bit too clever for Kojak to follow.  With Ember, many functions do not exist under the prototype until the 
+prototype's function is actually invoked.
+
 Other examples might follow.
 
 
@@ -107,8 +112,8 @@ For example, Kojak will profile the functions `packageFunction`, `classLevelFunc
 ````
 myProject.packageFunction = function(){};
 myProject.models.ModelA = function(){};
-myProject.models.ModelA.classLevelFunction(){};
-myProject.models.ModelA.prototype.prototypeLevelFunction(){};
+myProject.models.ModelA.classLevelFunction = function(){};
+myProject.models.ModelA.prototype.prototypeLevelFunction = function(){};
 ````
 
 It's important for Kojak to understand when a function will be invoked with the `new` operator and to avoid wrapping
