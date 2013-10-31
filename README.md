@@ -72,11 +72,16 @@ To get an idea of how Kojak works type you can quickly test this in a browser co
 ````
 
 <br>
-I have also added an <a href="https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App">example of how to profile the Backbone MVC todo application</a>.
+I have  added some examples of how to use Kojak with different frameworks using the <a href="https://github.com/tastejs/todomvc">Todo MVC app</a> from Addy Osmani and company.
 
-I spent a few hours with the Ember Todo MVC example but could not get it working with Kojak.  Ember looks like a pretty cool framework 
+<a href="https://github.com/theironcook/Kojak/wiki/Using-Kojak-to-Profile-the-Backbone-MVC-App">Backbone TODO MVC Example</a>
+
+<a href="https://github.com/theironcook/Kojak/tree/master/example/TodoMVC_Angular">Angular TODO MVC Example</a>. (check the index.html file)
+
+I spent a few hours with the Ember Todo MVC example but could not get it working with Kojak.  Ember looks like a pretty cool framework
 (I've spent a total of 3 hours with it) but it appears to be a bit too clever for Kojak to follow.  With Ember, many functions do not exist under the prototype until the 
-prototype's function is actually invoked.
+prototype's function is actually invoked.  It's unrealistic to execute the entire code base so it exists to be able to instrument it.
+Maybe some Ember expert out there can show me how it's done :)
 
 Other examples might follow.
 
