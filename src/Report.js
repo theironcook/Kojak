@@ -9,7 +9,7 @@ Kojak.Report = {
         var optsWereEmpty, clazzPaths, report = [], totalClazzes = 0, totalFuncs = 0;
 
         if(!Kojak.instrumentor.hasInstrumented()){
-            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            console.warn('You have not ran Kojak.instrumentor.instrument() yet.');
             return;
         }
 
@@ -75,9 +75,9 @@ Kojak.Report = {
             }
         }
         catch (exception) {
-            console.log('Error, Kojak.Report.instrumentedCode has failed ', exception);
+            console.error('Error, Kojak.Report.instrumentedCode has failed ', exception);
             if(exception.stack){
-                console.log('Stack:\n', exception.stack);
+                console.error('Stack:\n', exception.stack);
             }
         }
     },
@@ -145,7 +145,7 @@ Kojak.Report = {
 
     funcPerfAfterCheckpoint: function(opts){
         if(!Kojak.instrumentor.getLastCheckpointTime()){
-            console.log('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
+            console.warn('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
             return;
         }
 
@@ -180,7 +180,7 @@ Kojak.Report = {
             totalsRow = ['--Totals across all instrumented functions: '];
 
         if(!Kojak.instrumentor.hasInstrumented()){
-            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            console.warn('You have not ran Kojak.instrumentor.instrument() yet.');
             return;
         }
 
@@ -247,9 +247,9 @@ Kojak.Report = {
             Kojak.Formatter.formatReport(report);
         }
         catch (exception) {
-            console.log('Error, Kojak.Report.funcPerf has failed ', exception);
+            console.error('Error, Kojak.Report.funcPerf has failed ', exception);
             if(exception.stack){
-                console.log('Stack:\n', exception.stack);
+                console.error('Stack:\n', exception.stack);
             }
         }
     },
@@ -267,7 +267,7 @@ Kojak.Report = {
         var funcWrapper, kFProfile, callPaths, callPath, count, sorted = [], pathsReport = [], summaryReport = [];
 
         if(!Kojak.instrumentor.hasInstrumented()){
-            console.log('You have not ran Kojak.instrumentor.instrument() yet.');
+            console.warn('You have not ran Kojak.instrumentor.instrument() yet.');
             return;
         }
 
@@ -304,14 +304,21 @@ Kojak.Report = {
     },
 
     netCalls: function(){
-        var netProfiles, urlBase, netProfile, sorted = [], report = [];
+        this._netCalls(Kojak.netWatcher.getNetProfiles());
+    },
+
+    netCallsAfterCheckpoint: function(){
+        this._netCalls(Kojak.netWatcher.getNetProfiles_Checkpoint());
+    },
+
+    _netCalls: function(netProfiles){
+        var urlBase, netProfile, sorted = [], report = [];
 
         if(!Kojak.netWatcher){
-            console.log('The NetWatcher is not loaded.  Have you set Kojak.Config.setEnableNetWatcher(true)?');
+            console.warn('The NetWatcher is not loaded.  Have you set Kojak.Config.setEnableNetWatcher(true)?');
             return;
         }
 
-        netProfiles = Kojak.netWatcher.getNetProfiles();
         for(urlBase in netProfiles){
             netProfile = netProfiles[urlBase];
             sorted.push({totalCallTime: netProfile.getTotalCallTime(), netProfile: netProfile});

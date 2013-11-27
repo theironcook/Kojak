@@ -46,21 +46,30 @@ if(!window.kConfig){
     window.kConfig = Kojak.Config;
 }
 else {
-    console.log('Warning, the window.kConfig variable already existed.  Kojak shortcut will not exist.');
+    console.warn('Warning, the window.kConfig variable already existed.  Kojak shortcut will not exist.');
 }
 
 if(!window.kInst){
     window.kInst = Kojak.instrumentor;
 }
 else {
-    console.log('Warning, the window.kInst variable already existed.  Kojak shortcut will not exist.');
+    console.warn('Warning, the window.kInst variable already existed.  Kojak shortcut will not exist.');
+}
+
+if(Kojak.netWatcher){
+    if(!window.kNetWatch){
+        window.kNetWatch = Kojak.instrumentor;
+    }
+    else {
+        console.warn('Warning, the window.kNetWatch variable already existed.  Kojak shortcut will not exist.');
+    }
 }
 
 if(!window.kRep){
     window.kRep = Kojak.Report;
 }
 else {
-    console.log('Warning, the window.kRep variable already existed.  Kojak shortcut will not exist.');
+    console.warn('Warning, the window.kRep variable already existed.  Kojak shortcut will not exist.');
 }
 
 
