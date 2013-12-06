@@ -6,5 +6,5 @@ Kojak.Backbone.Watched = function(obj, type, id){
     this._type = type;
     this._id = id;
 
-    this._startedWatchTime = new Date();
+    this._startedWatchTime = Date.now();
 };

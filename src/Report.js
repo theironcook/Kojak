@@ -128,6 +128,11 @@ Kojak.Report = {
 
 
     funcPerf: function(opts){
+        var props, totalProps;
+
+        props = ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime'];
+        totalProps = ['IsolatedTime', 'CallCount'];
+
         if(!opts){
             opts = {};
         }
@@ -140,10 +145,15 @@ Kojak.Report = {
             opts.max = 20;
         }
 
-        this._functionPerfProps(opts, ['KPath', 'IsolatedTime', 'WholeTime', 'CallCount', 'AvgIsolatedTime', 'AvgWholeTime', 'MaxIsolatedTime', 'MaxWholeTime']);
+        this._functionPerfProps(opts, props, totalProps);
     },
 
     funcPerfAfterCheckpoint: function(opts){
+        var props, totalProps;
+
+        props = ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint',  'AvgIsolatedTime_Checkpoint', 'AvgWholeTime_Checkpoint', 'MaxIsolatedTime_Checkpoint', 'MaxWholeTime_Checkpoint'];
+        totalProps = ['IsolatedTime_Checkpoint', 'CallCount_Checkpoint'];
+
         if(!Kojak.instrumentor.getLastCheckpointTime()){
             console.warn('You have not taken any checkpoints yet to report on.  First run Kojak.takeCheckpoint() and invoke some of your code to test.');
             return;
@@ -162,22 +172,22 @@ Kojak.Report = {
         }
 
         console.log('Results since checkpoint taken: ' + Kojak.instrumentor.getLastCheckpointTime().toString('hh:mm:ss tt'));
-        this._functionPerfProps(opts, ['KPath', 'IsolatedTime_Checkpoint', 'WholeTime_Checkpoint', 'CallCount_Checkpoint',  'AvgIsolatedTime_Checkpoint', 'AvgWholeTime_Checkpoint', 'MaxIsolatedTime_Checkpoint', 'MaxWholeTime_Checkpoint']);
+        this._functionPerfProps(opts, props, totalProps);
     },
 
 
     // opts are
     //  max: a number - how many rows do you want to show
     //  filter: a string or an array of strings.  If a function's kPath partially matches any of the filter strings it's included
-    _functionPerfProps: function(opts, props){
-        var profilesWithData = [],
+    _functionPerfProps: function(opts, props, totalProps){
+        var sortedProfiles = [],
             report = [],
             reportRow,
             profileCount,
             kFProfile,
             fieldCount,
             totals = {},
-            totalsRow = ['--Totals across all instrumented functions: '];
+            totalsRow = [];
 
         if(!Kojak.instrumentor.hasInstrumented()){
             console.warn('You have not ran Kojak.instrumentor.instrument() yet.');
@@ -194,15 +204,15 @@ Kojak.Report = {
                 Kojak.Core.assert(Kojak.Core.isNumber(opts.max) && opts.max > 0, 'max should be a number greater than 0');
             }
 
+            // First filter
             Kojak.instrumentor.getFunctionProfiles().forEach(function(kFProfile){
                 if(!opts.filter || this._matchesAnyFilter(opts.filter, kFProfile.getKPath())){
-                    if(kFProfile.getProperty(opts.sortBy)){
-                        profilesWithData.push(kFProfile);
-                    }
+                    sortedProfiles.push(kFProfile);
                 }
             }.bind(this));
 
-            profilesWithData.sort(function(a, b){
+            // Then sort
+            sortedProfiles.sort(function(a, b){
                 return b.getProperty(opts.sortBy) - a.getProperty(opts.sortBy);
             });
 
@@ -210,8 +220,8 @@ Kojak.Report = {
             props.forEach(function(prop){reportRow.push('--' + prop.replace('_Checkpoint', '') + '--');});
             report.push(reportRow);
 
-            for (profileCount = 0; profileCount < profilesWithData.length && profileCount < opts.max; profileCount++) {
-                kFProfile = profilesWithData[profileCount];
+            for (profileCount = 0; profileCount < sortedProfiles.length && profileCount < opts.max; profileCount++) {
+                kFProfile = sortedProfiles[profileCount];
 
                 reportRow = [];
                 for(fieldCount = 0; fieldCount < props.length; fieldCount++){
@@ -222,25 +232,30 @@ Kojak.Report = {
 
             // function totals
             Kojak.instrumentor.getFunctionProfiles().forEach(function(kFProfile){
-                props.forEach(function(prop){
-                    var val;
+                totalProps.forEach(function(totalProp){
+                    var val = kFProfile.getProperty(totalProp);
 
-                    if(prop !== 'KPath'){
-                        val = kFProfile.getProperty(prop);
-
-                        if(this._isPropReportInTotals(prop) && Kojak.Core.isNumber(val)){
-                            if(!totals[prop]){
-                                totals[prop] = 0;
-                            }
-                            totals[prop] += val;
+                    if(Kojak.Core.isNumber(val)){
+                        if(!totals[totalProp]){
+                            totals[totalProp] = 0;
                         }
+                        totals[totalProp] += val;
                     }
                 }.bind(this));
             }.bind(this));
 
-            for(var prop in totals){
-                totalsRow.push(totals[prop]);
-            }
+            props.forEach(function(prop){
+                if(prop === 'KPath'){
+                    totalsRow.push('--Totals across all instrumented functions: ');
+                }
+                else if(totals[prop]){
+                    totalsRow.push(totals[prop]);
+                }
+                else {
+                    totalsRow.push('-');
+                }
+            });
+
             report.push(totalsRow);
 
             console.log('Top ' + opts.max + ' functions displayed sorted by ' + opts.sortBy + (opts.filter ? ' based on your filter: \'' + opts.filter: '\''));
@@ -252,15 +267,6 @@ Kojak.Report = {
                 console.error('Stack:\n', exception.stack);
             }
         }
-    },
-
-    _isPropReportInTotals: function(prop){
-        return prop === 'IsolatedTime' ||
-               prop === 'IsolatedTime_Checkpoint' ||
-               prop === 'WholeTime' ||
-               prop === 'WholeTime_Checkpoint' ||
-               prop === 'CallCount' ||
-               prop === 'CallCount_Checkpoint';
     },
 
     callPaths: function(funcPath){

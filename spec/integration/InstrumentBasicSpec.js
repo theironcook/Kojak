@@ -2,10 +2,10 @@ describe('Instrumentor suite', function() {
 
     beforeEach(function(){
         var blockThread = function (waitInMillis) {
-            var start = new Date() - 0;
+            var start = Date.now() - 0;
             var stop = start + waitInMillis;
 
-            while ((new Date() - 0) < stop) {
+            while ((Date.now() - 0) < stop) {
             }
         };
 

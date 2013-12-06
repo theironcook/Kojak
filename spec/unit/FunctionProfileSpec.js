@@ -1,10 +1,10 @@
 describe('FunctionProfile suite', function() {
 
     var blockThread = function (waitInMillis) {
-        var start = new Date() - 0;
+        var start = Date.now() - 0;
         var stop = start + waitInMillis;
 
-        while ((new Date() - 0) < stop) {
+        while ((Date.now() - 0) < stop) {
         }
     };
 
@@ -12,11 +12,11 @@ describe('FunctionProfile suite', function() {
     // assumes tests will not call functions recursively
     Kojak.instrumentor = {
         recordStartFunction: function(fProfile){
-            fProfile.pushStartTime(new Date(), 'parent');
+            fProfile.pushStartTime(Date.now(), 'parent');
         },
         recordStopFunction: function(fProfile){
             var startTime = fProfile.popStartTime();
-            var callTime = (new Date()) - startTime;
+            var callTime = Date.now() - startTime;
 
             fProfile.recordCallMetrics('', callTime, callTime);
         }
