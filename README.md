@@ -242,6 +242,11 @@ The invocation paths will only include functions that Kojak has instrumented.  T
 why a function is called too much.
 
 <br>
+<b>If you start using Kojak I'd highly recomend you review this slide show.</b>
+<a href="http://www.slideshare.net/BartWood/kojak-pics">Kojak Metrics Explained</a>
+
+
+<br>
 ####Tracking performance in between actions
 Sometimes it's helpful to take performance checkpoints between actions and not include any previous results.  Sometimes it
 can take a long time to set up a test and you don't want to have to repeat steps.  You can only run kInst.instrument() one time.
