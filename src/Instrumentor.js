@@ -116,7 +116,7 @@ Kojak.Core.extend(Kojak.Instrumentor.prototype, {
                 pakageName = Kojak.Core.getObjName(pakagePath);
                 if(   Kojak.Core.inferKojakType(pakageName, pakage) === Kojak.Core.CLAZZ &&
                     ! pakage.prototype._kPath){
-                    console.error('---found PACKAGE that is a clazz ', pakagePath);
+                    console.log('---found PACKAGE that is a clazz ', pakagePath);
                     curPakageNames.push(pakagePath + '.prototype');
                 }
             }

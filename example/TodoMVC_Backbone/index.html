@@ -96,6 +96,9 @@
                 // Tell Kojak we care about all the code under the name window.app
                 kConfig.setIncludedPakages(['app']);
 
+                // Make sure Kojak doesn't have any garbage in it's excluded paths
+                kConfig.setExcludedPaths([]);
+
                 // Now go and instrument all of that code so we can track it's performance
                 // Normally you would call this from the browser console
                 kInst.instrument();
