@@ -7,7 +7,7 @@ and help figure out how fast they are.
 (Kojak was a <a href="http://en.wikipedia.org/wiki/Kojak">tv show detective</a>)
 
 ####Why Kojak?
-I've found that Chrome's developer tools or Firebug have too much noise to make much sense of my own code.  I needed a tool
+I've found that Chrome's developer tools or Firebug have too much noise to make much sense of my own code.  My current project is a 200k line single page app.  I needed a tool
 that would remove all of the noise and clutter.  I wanted a tool that was easy to configure and didn't force me to inject hooks all over
 my code.  Kojak helps you focus on the performance of your own code and eliminate the clutter.  It's helped me / my project
 to significantly speed up our JavaScript code. Hopefully it can help you and your projects.
