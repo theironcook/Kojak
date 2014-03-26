@@ -14,7 +14,7 @@ to significantly speed up our JavaScript code. Hopefully it can help you and you
 
 ####Dependencies
 The core of Kojak has no external dependencies.  I've worked hard to avoid using any other libraries so that the tool is
-light weight and easy to use. You need a modern browser such as Chrome, Firefox or IE 9.0+.
+light weight and easy to use. You need a modern browser such as Chrome, Firefox or IE 10+ (It works OK on IE 9).
 If you want to profile ajax network requests you will need to include jQuery.
 
 <br>

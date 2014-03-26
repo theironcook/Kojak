@@ -60,19 +60,20 @@ Kojak.Report = {
                 }
             }.bind(this));
 
-            Kojak.Formatter.formatReport(report);
 
-            console.log('\n\tNumber of clazzes reported: ' + Kojak.Formatter.number(totalClazzes));
-            console.log('\tNumber of functions reported: ' + Kojak.Formatter.number(totalFuncs));
+
+            report.push(['--Number of clazzes reported: ' + Kojak.Formatter.number(totalClazzes), '-', '-']);
+            report.push(['--Number of functions reported: ' + Kojak.Formatter.number(totalFuncs), '-', '-']);
 
             if(opts.filter){
-                console.log('\tClazz and function counts are less than what has been instrumented in your application');
-                console.log('\tCounts are based off of what has been filtered with \'' + opts.filter + '\'');
+                report.push(['--Counts are based off of filter: \'' + opts.filter + '\'', '-', '-']);
             }
 
             if(optsWereEmpty){
-                console.log('\n\tOptions for this command are {filter: [\'xxx\', \'yyy\'], verbose: true}');
+                report.push(['--Options for command {filter: [\'xxx\', \'yyy\'], verbose: true}', '-', '-']);
             }
+
+            Kojak.Formatter.formatReport(report);
         }
         catch (exception) {
             console.error('Error, Kojak.Report.instrumentedCode has failed ', exception);
