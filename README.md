@@ -3,7 +3,7 @@
 ####What is Kojak?
 Kojak is a simple utility that can help you figure out which of your JavaScript functions are running too slow. It tracks when your
 functions are called, how often they are called, how much time they are taking, how the functions were called.  It can also track your ajax calls
-and help figure out how fast they are. 
+and help figure out how fast they are.
 (Kojak was a <a href="http://en.wikipedia.org/wiki/Kojak">tv show detective</a>)
 
 ####Why Kojak?
@@ -34,7 +34,7 @@ myProject.utils.sharedUsefulFunction = function(){};
 
 Kojak expects that the code lives somewhere under the `window` object.  In the example above, the code lives under `window.myProject`.
 
-If your using something like requireJS that hides your code, you will probably need to expose your modules to Kojak with a quick shim.
+If you're using something like requireJS that hides your code, you will probably need to expose your modules to Kojak with a quick shim.
 [Here](https://github.com/theironcook/Kojak/blob/master/example/RequireJSExampleShim.js) is an example of how to hook up requireJS.
 You can copy the same pattern with almost any module style code.
 
@@ -79,7 +79,7 @@ I have  added some examples of how to use Kojak with different frameworks using 
 <a href="https://github.com/theironcook/Kojak/tree/master/example/TodoMVC_Angular">Angular TODO MVC Example</a>. (check the index.html file)
 
 I spent a few hours with the Ember Todo MVC example but could not get it working with Kojak.  Ember looks like a pretty cool framework
-(I've spent a total of 3 hours with it) but it appears to be a bit too clever for Kojak to follow.  With Ember, many functions do not exist under the prototype until the 
+(I've spent a total of 3 hours with it) but it appears to be a bit too clever for Kojak to follow.  With Ember, many functions do not exist under the prototype until the
 prototype's function is actually invoked.  It's unrealistic to execute the entire code base so it exists to be able to instrument it.
 Maybe some Ember expert out there can show me how it's done :)
 
@@ -156,14 +156,14 @@ There are several other options in `kConfig` that are discussed in a later secti
 automatically in the browser's local storage.  So, the next time you refresh a page etc. your Kojak options are saved.
 
 <br>
-After you've told Kojak what it should are about and what to exclude you need to run this command:
+After you've told Kojak what it should care about and what to exclude you need to run this command:
 ```` kInst.instrument(); ````
 
 The `instrument` function will locate every single `Pakage`, `Clazz` and `function` that can be found recursively through
 what you specified in the kConfig. Kojak will inject a `_kPath` string in each `Pakage` and `Clazz` that is the fully qualified
 path to the `Package` or `Clazz` so that they can be self aware of where they live.
 
-The `instrument` function replace each `function` it finds with a wrapper function.  The wrapper function helps Kojak to
+The `instrument` function replaces each `function` it finds with a wrapper function.  The wrapper function helps Kojak to
 track everything that happens with that function. The new wrapper function contains a `_kFProfile` property.  The `_kProfile`
 property keeps track of all of the information of what is a happening with the function.
 
@@ -175,7 +175,7 @@ If you want more details you can run this command:
 
 <br>
 After you have told Kojak to instrument your code you can now invoke your code.  Typically you will click on something etc.
-After some of your code has ran you want to see why it was so slow.  To determine which functions are too slow run the command:
+After some of your code has run you want to see why it was so slow.  To determine which functions are too slow run the command:
 ```` kRep.funcPerf(); ````
 
 By default, this function will return the 20 slowest functions (sorted by IsolatedTime) that have been profiled. For example:
@@ -262,7 +262,7 @@ Then run this command:
 The funcPerfAfterCheckpoint() is identical to funcPerf() and can accept the same parameters.  The difference is that
   the function results (IsolatedTime etc.) are only since the last time takeCheckpoint() was called.
 
-Sometimes it's particularly interesting to watch the CallCount's for functions when running the identical actions.  Most of
+Sometimes it's particularly interesting to watch the CallCounts for functions when running the identical actions.  Most of
 the time the CallCount numbers should be identical.  If they are not, you probably have some type of memory leak.
 
 
@@ -271,7 +271,7 @@ the time the CallCount numbers should be identical.  If they are not, you probab
 Kojak can also track all of your network ajax requests.  To use the NetWatcher you must use jQuery.  To enable run this command:
 ```` kConfig.setEnableNetWatcher(true); ````
 
-The Kojak NetWatcher will then watch any ajax requests made.  To see a consolidated view the results use this command:
+The Kojak NetWatcher will then watch any ajax requests made.  To see a consolidated view of the results use this command:
 ````
 kRep.netCalls();
 // Example output
@@ -383,14 +383,13 @@ Normally you won't need to do this unless you are forking the code.  If you do w
 * Install NodeJS
 * Install GIT
 * Fork the code (git clone https://github.com/theironcook/Kojak/)
-* Navigate to the directory you forked the code and type: npm install
+* Navigate to the directory you forked the code and type: `npm install`
 
 This will install grunt, phantom, jasmine, uglify etc. in the local node_modules directory.
 
-To build a prod version type: grunt buildProd
-To build a dev version type: grunt buildDev
-You can also type: grunt watch
-This will run grunt buildDev whenever a source file or a unit test changes.
+To build a prod version type: `grunt buildProd`<br>
+To build a dev version type: `grunt buildDev`<br>
+You can also type: `grunt watch` This will run `grunt buildDev` whenever a source file or a unit test changes.
 
 
 <br>
